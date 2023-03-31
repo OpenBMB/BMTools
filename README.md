@@ -1,8 +1,8 @@
 # BMTools
 
-BMTools is an open-source repository that extends language models using tools and serves as a platform for the community to build and share tools. In this repository, you can (1) easily build a plugin by writing python functions (2) use external Chatgpt-Plugins. 
+BMTools is an open-source repository that extends language models using tools and serves as a platform for the community to build and share tools. In this repository, you can (1) easily build a plugin by writing python functions (2) use external ChatGPT-Plugins. 
 
-This project is inspired by the open-source project [LangChain](https://github.com/hwchase17/langchain/) and optimized for the usage of open-sourced tools like [ChatGPT-Plugins](https://openai.com/blog/chatgpt-plugins), striving to achieve the open-source academic version of ChatGPT-plugin.
+This project is inspired by the open-source project [LangChain](https://github.com/hwchase17/langchain/) and optimized for the usage of open-sourced tools like [ChatGPT-Plugins](https://openai.com/blog/chatgpt-plugins), striving to achieve the open-source academic version of ChatGPT-Plugins.
 
 Current version of BMTools is far from perfect, we will continue to improve it. 
 
@@ -26,7 +26,7 @@ python host_local_tools.py
 ```
 Then use set the url of plugin to `http://127.0.0.1:8079/tools/{tool_name}/` (Remember the tailing `/`).
 
-#### 2.1.2 Use online ChatGPT-plugin
+#### 2.1.2 Use online ChatGPT-Plugins
 
 Just loaded it with the URL pointed to the `.well-known/ai-plugin.json`
 For example, 
