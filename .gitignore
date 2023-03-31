@@ -1,0 +1,27 @@
+# Compiled python files
+*.pyc
+
+# Compiled C extensions
+*.so
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# IDE / editor files
+.idea/
+*.swp
+*~
+
+# Virtual environment
+venv/
+env/
+
+__pycache__/
+.vscode/
+.DS_Store
+
+cache/
+
+secret_keys_mine.sh
