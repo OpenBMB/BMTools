@@ -9,12 +9,12 @@ with open("requirements.txt", "r") as f:
 setuptools.setup(
     name="bmtools",
     version="0.1.0",
-    author="Shengding Hu",
+    author="OpenBMB",
     author_email="shengdinghu@gmail.com",
     description="API library for big models to use tools",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/shengdinghu/bmtools",
+    url="https://github.com/OpenBMB/BMTools",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
