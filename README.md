@@ -9,7 +9,7 @@ Current version of BMTools is far from perfect, we will continue to improve it.
 
 ## 1. Setup
 
-```
+```bash
 git clone git@github.com:OpenBMB/BMTools.git
 python setup.py develop
 ```
@@ -20,7 +20,7 @@ python setup.py develop
 
 #### 2.1.1 Local tools
 Add your api keys to secret_keys.sh, then start the local tools
-```
+```bash
 source secret_keys.sh
 python host_local_tools.py
 ```
@@ -34,7 +34,7 @@ Set the url to `https://www.klarna.com/`, where `https://www.klarna.com/.well-kn
 
 ### 2.2 Use a single tool 
 
-```
+```python
 from bmtools.agent.singletool import load_single_tools, STQuestionAnswerer
 
 tool_name, tool_url = 'klarna',  'https://www.klarna.com/'
@@ -51,7 +51,7 @@ We can use multiple tools at the same time. Basically, the language model will d
 
 Try this functionality using scripts like:
 
-```
+```python
 from bmtools.agent.tools_controller import load_valid_tools, MTQuestionAnswerer
 tools_mappings = {
     "klarna": "https://www.klarna.com/",
@@ -72,7 +72,7 @@ agent("How many benzene rings are there in 9H-Carbazole-3-carboxaldehyde? and wh
 1. Add your plugin to the mappings at beginning of web_demo.py
 
 2. Start the webdemo
-```
+```bash
 python web_demo.py
 ```
 
@@ -132,11 +132,12 @@ Here we register the tool with the name `python`.
 
 After you have developed a tool, you can contribute it to BMTools by following the steps below:
 1. Fork this repository
-2. Create a folder in bmtools/tools/{tool_name}
-3. Add an api.py to the folder: bmtools/tools/{tool_name}/api.py and a \_\_init\_\_.py to the folder: bmtools/tools/{tool_name}/__init__.py
-4. Register the tool in the \_\_init\_\_.py file you created in step 3 using the code in section 3.1
-5. Import your tool in the \_\_init\_\_.py file under bmtools/tools
-6. Add a test.py to test your tool automatically
+2. Create a folder in `bmtools/tools/{tool_name}`
+3. Add an `api.py` to the folder: `bmtools/tools/{tool_name}/api.py` and a `__init__.py` to the folder: `bmtools/tools/{tool_name}/__init__.py`
+4. Register the tool in the `__init__.py` file you created in step 3 using the code in section 3.1
+5. Import your tool in the `__init__.py` file under bmtools/tools
+6. Add a `test.py` to test your tool automatically
+7. Add a `readme.md` in your folder containing a brief introduction, contributor information, or anything you want to let others know. 
 
 ## 4. Optimize your tool's prompt
 The functions you wrote will be converted into an interface compatible with the OpenAI plugin. The AI models will read the name, description of the tools, and the name, descriptions of the APIs of that tools. You can adjust the following aspect to make your API better understood by AI models.
@@ -148,7 +149,6 @@ The functions you wrote will be converted into an interface compatible with the 
 - (5) The function's return value, which can provide the model with error messages to guide its next steps, such as retrying or indicating a preferred next step 
 - (6) Reduce the errors in your API function.
 
-A sample to refer to is the Wolfram Alpha API.
-
+A simple example to refer to is the [Wolfram Alpha API](./bmtools/tools/wolframalpha/).
 
 
