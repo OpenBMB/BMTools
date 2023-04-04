@@ -16,3 +16,5 @@ gradio
 fastapi_sessions
 translate
 socksio
+py3langid
+iso-639

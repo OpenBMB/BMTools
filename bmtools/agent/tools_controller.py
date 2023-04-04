@@ -8,7 +8,7 @@ import requests
 import yaml
 from bmtools.agent.apitool import Tool
 from bmtools.agent.singletool import STQuestionAnswerer
-from bmtools.agent.executor import Executor
+from bmtools.agent.executor import Executor, AgentExecutorWithTranslation
 from bmtools import get_logger
 
 logger = get_logger(__name__)
@@ -90,7 +90,7 @@ class MTQuestionAnswerer:
         if self.stream_output:
             agent_executor = Executor.from_agent_and_tools(agent=agent, tools=self.tools_pool, verbose=True, return_intermediate_steps=True)
         else:
-            agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=self.tools_pool, verbose=True, return_intermediate_steps=True)
+            agent_executor = AgentExecutorWithTranslation.from_agent_and_tools(agent=agent, tools=self.tools_pool, verbose=True, return_intermediate_steps=True)
         return agent_executor
 
 
