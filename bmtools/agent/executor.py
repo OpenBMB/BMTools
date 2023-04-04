@@ -15,10 +15,14 @@ class AgentExecutorWithTranslation(AgentExecutor):
         outputs: Dict[str, str],
         return_only_outputs: bool = False,
     ) -> Dict[str, str]:
-        outputs = super().prep_outputs(inputs, outputs, return_only_outputs)
-        if "input" in outputs:
-            outputs = self.translator(outputs)
-        return outputs
+        try:
+            outputs = super().prep_outputs(inputs, outputs, return_only_outputs)
+        except ValueError as e:
+            return outputs
+        else:
+            if "input" in outputs:
+                outputs = self.translator(outputs)
+            return outputs
 
 class Executor(AgentExecutorWithTranslation):
     def _call(self, inputs: Dict[str, str]) -> Dict[str, Any]:
