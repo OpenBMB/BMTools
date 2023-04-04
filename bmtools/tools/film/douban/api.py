@@ -29,7 +29,6 @@ def build_tool(config) -> Tool:
 
         return response
 
-    @tool.get("/parse_coming_page")
     def parse_coming_page():
         """parse_coming_page() prints the details of the all coming films, including date, title, cate, region, wantWatchPeopleNum, link
         """
@@ -47,7 +46,6 @@ def build_tool(config) -> Tool:
         for filmChild in movies_table[0].iter('tr'):
             filmTime = filmChild.xpath('td[1]/text()')[0].strip()
             filmName = filmChild.xpath('td[2]/a/text()')[0]
-            # Translator(fo).translate(filmType)
             filmType = filmChild.xpath('td[3]/text()')[0].strip()
             filmRegion = filmChild.xpath('td[4]/text()')[0].strip()
             filmWantWatching = filmChild.xpath('td[5]/text()')[0].strip()
@@ -56,8 +54,7 @@ def build_tool(config) -> Tool:
                 filmTime, filmName, filmType, filmRegion, filmWantWatching, filmLink
             ]
         return df_filmsComing
-
-    @tool.get("/parse_nowplaying_page")
+    
     def parse_nowplaying_page():
         """parse_nowplaying_page() prints the details of the all playing films now, including title, score, region, director, actors, link
         """
@@ -82,7 +79,7 @@ def build_tool(config) -> Tool:
                 filmName, filmScore, filmRegion, filmDirector, filmActors, filmLink
             ]
         return df_filmsNowPlaying
-    
+
     def parse_detail_page(response):
         """parse_detail_page(response) get information from response.text
         """
@@ -112,15 +109,24 @@ def build_tool(config) -> Tool:
         Synopsis = tree.xpath('.//div[@class="related-info"]/div/span')[0].text.strip()
         detail = f'是一部{region}的{types}电影，由{director}导演，{actors}等人主演.\n剧情简介：{Synopsis}'
         return detail
-    
+
     @tool.get("/coming_out_filter")
     def coming_out_filter(args : str):
         """coming_out_filter(args: str) prints the details of the filtered [outNum] coming films now according to region, cate and outNum. 
             args is a list like 'str1, str2, str3, str4'
-            str1 can be 中国, 日本, or other region. If you canot find a region, str1 is 全部
-            str2 can be 爱情, 喜剧 or other category. If you canot find a category, str2 is 全部
-            str3 can be a integer number that agent want to get. If you canot find a number, str2 is 100.
+            str1 represents Production country or region. If you cannot find a region, str1 is 全部
+            str2 represents movie's category. If you cannot find a category, str2 is 全部
+            str3 can be a integer number that agent want to get. If you cannot find a number, str2 is 100. If the found movie's num is less than str2, Final Answer only print [the found movie's num] movies.
             str4 can be a True or False that refluct whether agent want the result sorted by people number which look forward to the movie.
+            Final answer should be complete.
+
+            This is an example:
+            Thought: I need to find the upcoming Chinese drama movies and the top 2 most wanted movies
+            Action: coming_out_filter
+            Action Input: {"args" : "中国, 剧情, 2, True"}
+            Observation: {"date":{"23":"04月28日","50":"07月"},"title":{"23":"长空之王","50":"热烈"},"cate":{"23":"剧情 / 动作","50":"剧情 / 喜剧"},"region":{"23":"中国大陆","50":"中国大陆"},"wantWatchPeopleNum":{"23":"39303人","50":"26831人"}}
+            Thought: I now know the top 2 upcoming Chinese drama movies
+            Final Answer: 即将上映的中国剧情电影有2部：长空之王、热烈，大家最想看的前2部分别是：长空之王、热烈。
         """
         args = re.findall(r'\b\w+\b', args)
         region = args[0]
@@ -152,9 +158,20 @@ def build_tool(config) -> Tool:
     def now_playing_out_filter(args : str):
         """NowPlayingOutFilter(args: str) prints the details of the filtered [outNum] playing films now according to region, scoreSort
             args is a list like 'str1, str2, str3'
-            str1 can be 中国, 日本, or other region. If you canot find a region, str1 is 全部
-            str2 can be a integer number that agent want to get. If you canot find a number, str2 is 100.
+            str1 can be '中国','日本' or other Production country or region. If you cannot find a region, str1 is 全部
+            str2 can be a integer number that agent want to get. If you cannot find a number, str2 is 100. If the found movie's num is less than str2, Final Answer only print [the found movie's num] movies.
             str3 can be a True or False that refluct whether agent want the result sorted by score.
+            Final answer should be complete.
+
+            This is an example:
+            Input: 您知道现在有正在上映中国的电影吗？请输出3部
+            Thought: I need to find the currently playing movies with the highest scores
+            Action: now_playing_out_filter
+            Action Input: {"args" : "全部, 3, True"}
+            Observation: {"title":{"34":"切腹","53":"吉赛尔","31":"小森林 夏秋篇"},"score":{"34":"9.4","53":"9.2","31":"9.0"},"region":{"34":"日本","53":"西德","31":"日本"},"director":{"34":"小林正树","53":"Hugo Niebeling","31":"森淳一"},"actors":{"34":"仲代达矢 / 石浜朗 / 岩下志麻","53":"卡拉·弗拉奇 / 埃里克·布鲁恩 / Bruce Marks","31":"桥本爱 / 三浦贵大 / 松冈茉优"}}
+            Thought: I now know the currently playing movies with the highest scores
+            Final Answer: 现在上映的评分最高的3部电影是：切腹、吉赛尔、小森林 夏秋篇
+            
         """
         args = re.findall(r'\b\w+\b', args)
         region = args[0]
@@ -170,7 +187,6 @@ def build_tool(config) -> Tool:
         df_recon['score'] = df_recon['score'].apply(lambda x: float(x))
 
         # 正在上映的某类型电影，根据地区进行筛选
-        region = Translator(from_lang='English', to_lang='Chinese').translate(region)
         df_recon = df_recon[df_recon['region'].str.contains(region)]
         
         # 最后根据评分降序排列 
@@ -183,12 +199,36 @@ def build_tool(config) -> Tool:
     def print_detail(args : str):
         """parsing_detail_page(args) prints the details of a movie, giving its name.
             args is a list like 'str1'
-            str1 can be 指环王、神奇女侠、梅兰芳 or other movie's name.
+            str1 is target movie's name.
             step1: apply function parse_coming_page and parse_nowplaying_page and get all movie's links and other infomation.
             step2: get the target movie's link from df_coming or df_nowplaying
             step3: get detail from step2's link
+
+            This is an example: 
+            Input: "电影流浪地球2怎么样？"
+            Thought: I need to find the movie's information
+            Action: print_detail
+            Action Input: {"args" : "流浪地球2"}
+            Observation: "是一部中国大陆的科幻、冒险、灾难电影，由郭帆导演，吴京、刘德华、李雪健等人主演.\n剧情简介：太阳即将毁灭，人类在地球表面建造出巨大的推进器，寻找新的家园。然而宇宙之路危机四伏，为了拯救地球，流浪地球时代的年轻人再次挺身而出，展开争分夺秒的生死之战。"
+            Thought: I now know the final answer
+            Final Answer: 流浪地球2是一部中国大陆的科幻、冒险、灾难电影，由郭帆导演，吴京、刘德华、李雪健等人主演，剧情简介是太阳即将毁灭，人类在地球表面建造出巨大的推进器，寻找新的家园，然而宇宙之路危机四伏，为了拯救地球，流浪地球时代的年轻人再次挺身而出，
+            
         """
         args = re.findall(r'\b\w+\b', args)
         filmName = args[0]
-        return f'{filmName}是一部好看的国产动漫电影'
+
+        df_coming = parse_coming_page()
+        df_nowplaying = parse_nowplaying_page()
+        
+        if filmName in list(df_coming['title']):
+            df = df_coming
+            url = df[df['title']==filmName]['link'].values[0]
+            response = fetch_page(url)
+            detail = parse_detail_page(response)
+        elif filmName in list(df_nowplaying['title']):
+            df = df_nowplaying
+            url = df[df['title']==filmName]['link'].values[0]
+            response = fetch_page(url)
+            detail = parse_detail_page(response)
+        return f'{filmName}{detail}'
     return tool
