@@ -156,5 +156,5 @@ def register_python_tool():
 
 6.  减少 API 函数中的错误。
 
-一个简单的例子是 [Wolfram Alpha API](https://chat.openai.com/bmtools/tools/wolframalpha/)，其可作为工具提示优化的参考。
+一个简单的例子是 [Wolfram Alpha API](https://github.com/OpenBMB/BMTools/tree/main/bmtools/tools/wolframalpha)，其可作为工具提示优化的参考。
 
