@@ -18,3 +18,5 @@ translate
 socksio
 py3langid
 iso-639
+transformers
+cchardet
