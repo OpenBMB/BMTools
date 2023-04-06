@@ -40,8 +40,8 @@ def build_tool(config) -> Tool:
             "salt": salt,
             "sign": sign
         }
-        response = requests.post(endpoint, params= data, headers= header)  # 发送post请求
-        text = response.json()  # 返回的为json格式用json接收数据
+        response = requests.post(endpoint, params= data, headers= header)
+        text = response.json()
         results = text['trans_result'][0]['dst']
         return results
     
