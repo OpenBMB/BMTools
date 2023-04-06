@@ -44,11 +44,9 @@ def build_tool(config) -> Tool:
         kk = 3
         for syn in syns[:kk]:
             ans.append(syn.text)
-        if ifprint==0:
-            return ans
-        else:
-            js = {'names':ans}
-            return js
+
+        js = {'names':ans}
+        return js
 
     @tool.get("/get_allname")
     def get_allname( cid: str ):
@@ -60,11 +58,9 @@ def build_tool(config) -> Tool:
         ans = []
         for syn in syns:
             ans.append(syn.text)
-        if ifprint==0:
-            return ans
-        else:
-            js = {'names':ans}
-            return js
+
+        js = {'names':ans}
+        return js
 
     @tool.get("/get_id_by_struct")
     def get_id_by_struct(smiles : str):
