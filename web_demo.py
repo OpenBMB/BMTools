@@ -18,6 +18,8 @@ tools_mappings = {
     "wikipedia": "http://127.0.0.1:8079/tools/wikipedia/",
     "office-ppt": "http://127.0.0.1:8079/tools/office-ppt/",
     "bing_search": "http://127.0.0.1:8079/tools/bing_search/",
+    "baidu-translation": "http://127.0.0.1:8079/tools/baidu-translation/",
+    "nllb-translation": "http://127.0.0.1:8079/tools/nllb-translation/",
 }
 
 valid_tools_info = load_valid_tools(tools_mappings)
