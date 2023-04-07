@@ -18,6 +18,8 @@ tools_mappings = {
     "wikipedia": "http://127.0.0.1:8079/tools/wikipedia/",
     "office-ppt": "http://127.0.0.1:8079/tools/office-ppt/",
     "bing_search": "http://127.0.0.1:8079/tools/bing_search/",
+    "map": "http://127.0.0.1:8079/tools/map/",
+    "stock": "http://127.0.0.1:8079/tools/stock/",
     "baidu-translation": "http://127.0.0.1:8079/tools/baidu-translation/",
     "nllb-translation": "http://127.0.0.1:8079/tools/nllb-translation/",
 }
