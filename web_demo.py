@@ -20,6 +20,8 @@ tools_mappings = {
     "bing_search": "http://127.0.0.1:8079/tools/bing_search/",
     "map": "http://127.0.0.1:8079/tools/map/",
     "stock": "http://127.0.0.1:8079/tools/stock/"
+    "baidu-translation": "http://127.0.0.1:8079/tools/baidu-translation/",
+    "nllb-translation": "http://127.0.0.1:8079/tools/nllb-translation/",
 }
 
 valid_tools_info = load_valid_tools(tools_mappings)

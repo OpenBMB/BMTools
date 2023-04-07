@@ -3,8 +3,28 @@ from typing import Any, Dict, List, Tuple, Union
 from langchain.agents import AgentExecutor
 from langchain.input import get_color_mapping
 from langchain.schema import AgentAction, AgentFinish
+from bmtools.agent.translator import Translator
 
-class Executor(AgentExecutor):
+class AgentExecutorWithTranslation(AgentExecutor):
+
+    translator: Translator = Translator()
+
+    def prep_outputs(
+        self,
+        inputs: Dict[str, str],
+        outputs: Dict[str, str],
+        return_only_outputs: bool = False,
+    ) -> Dict[str, str]:
+        try:
+            outputs = super().prep_outputs(inputs, outputs, return_only_outputs)
+        except ValueError as e:
+            return outputs
+        else:
+            if "input" in outputs:
+                outputs = self.translator(outputs)
+            return outputs
+
+class Executor(AgentExecutorWithTranslation):
     def _call(self, inputs: Dict[str, str]) -> Dict[str, Any]:
         """Run text through and get agent response."""
         # Do any preparation necessary when receiving a new input.
@@ -78,9 +98,12 @@ class Executor(AgentExecutor):
         )
         try:
             for output in self._call(inputs):
+                if type(output) is dict:
+                    output = self.prep_outputs(inputs, output, return_only_outputs)
                 yield output
         except (KeyboardInterrupt, Exception) as e:
             self.callback_manager.on_chain_error(e, verbose=self.verbose)
             raise e
         self.callback_manager.on_chain_end(output, verbose=self.verbose)
-        return self.prep_outputs(inputs, output, return_only_outputs)
+        # return self.prep_outputs(inputs, output, return_only_outputs)
+        return output
