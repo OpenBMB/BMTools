@@ -1,3 +1,7 @@
+<div align="center">
+
+<h1><img src="docs/logo.png" height="28px" /> BMTools</h1>
+
 # BMTools
 
 *Read this in [English](README_en.md).*
