@@ -1,4 +1,6 @@
-# BMTools
+<div style="text-align: center;">
+    <h1><img src="docs/logo.png" height="28px" /> BMTools</h1>
+</div>
 
 BMTools is an open-source repository that extends language models using tools and serves as a platform for the community to build and share tools. In this repository, you can (1) easily build a plugin by writing python functions (2) use external ChatGPT-Plugins. 
 
