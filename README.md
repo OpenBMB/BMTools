@@ -1,6 +1,6 @@
-<div align="center">
-
-<h1><img src="docs/logo.png" height="28px" /> BMTools</h1>
+<div style="text-align: center;">
+    <h1><img src="docs/logo.png" height="28px" /> BMTools</h1>
+</div>
 
 *Read this in [English](README_en.md).*
 
