@@ -5,6 +5,7 @@ from bmtools.agent.tools_controller import MTQuestionAnswerer, load_valid_tools
 from bmtools.agent.singletool import STQuestionAnswerer
 from langchain.schema import AgentFinish
 import os
+import requests
 
 available_models = ["ChatGPT", "GPT-3.5"]
 DEFAULTMODEL = "GPT-3.5"
@@ -26,6 +27,7 @@ tools_mappings = {
 
 valid_tools_info = load_valid_tools(tools_mappings)
 print(valid_tools_info)
+all_tools_list = sorted(list(valid_tools_info.keys()))
 
 gr.close_all()
 
@@ -90,6 +92,22 @@ def answer_by_tools(question, tools_chosen, model_chosen):
         return_msg[-1] = (return_msg[-1][0], return_msg[-1][1].replace("<font color=red>Answer:</font> ", "<font color=green>Final Answer:</font> "))
     yield [gr.update(visible=True, value=return_msg), gr.update(visible=True), gr.update(visible=False)]
 
+def retrieve(tools_search):
+    if tools_search == "":
+        return gr.update(choices=all_tools_list)
+    else:
+        url = "http://127.0.0.1:8079/retrieve"
+        param = {
+            "query": tools_search
+        }
+        response = requests.post(url, json=param)
+        result = response.json()
+        retrieved_tools = result["tools"]
+        return gr.update(choices=retrieved_tools)
+
+def clear_retrieve():
+    return [gr.update(value=""), gr.update(choices=all_tools_list)]
+
 def clear_history():
     global return_msg
     global chat_history
@@ -115,8 +133,15 @@ with gr.Blocks() as demo:
             chatbot = gr.Chatbot(show_label=False, visible=True).style(height=600)
 
         with gr.Column(scale=1):
+            with gr.Row():
+                tools_search = gr.Textbox(
+                    lines=1,
+                    label="Tools Search",
+                    info="Please input some text to search tools.",
+                )
+                buttonSearch = gr.Button("Clear")
             tools_chosen = gr.CheckboxGroup(
-                sorted(list(valid_tools_info.keys())),
+                choices=all_tools_list,
                 value=["chemical-prop"],
                 label="Tools provided",
                 info="Choose the tools to solve your question.",
@@ -124,6 +149,9 @@ with gr.Blocks() as demo:
             model_chosen = gr.Dropdown(
                 list(available_models), value=DEFAULTMODEL, multiselect=False, label="Model provided", info="Choose the model to solve your question, Default means ChatGPT."
             )
+    tools_search.change(retrieve, tools_search, tools_chosen)
+    buttonSearch.click(clear_retrieve, [], [tools_search, tools_chosen])
+
     txt.submit(lambda : [gr.update(value=''), gr.update(visible=False), gr.update(visible=True)], [], [txt, buttonClear, buttonStop])
     inference_event = txt.submit(answer_by_tools, [txt, tools_chosen, model_chosen], [chatbot, buttonClear, buttonStop])
     buttonStop.click(lambda : [gr.update(visible=True), gr.update(visible=False)], [], [buttonClear, buttonStop], cancels=[inference_event])
