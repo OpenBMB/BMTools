@@ -1,8 +1,13 @@
 import fastapi
 import uvicorn
 from .registry import build_tool, list_tools
+from .retriever import Retriever
 from typing import List
+from pydantic import BaseModel
 
+class RetrieveRequest(BaseModel):
+    query: str
+    topk: int = 3
 
 def _bind_tool_server(t : "ToolServer"):
     """ Add property API to ToolServer.
@@ -48,6 +53,13 @@ def _bind_tool_server(t : "ToolServer"):
             "legal_info_url": "",
         }
 
+    @t.api.post("/retrieve")
+    def retrieve(request: RetrieveRequest):
+        tool_list = t.retrieve(request.query, request.topk)
+        return {
+            "tools": tool_list
+        }
+
 class ToolServer:
     """ This class host your own API backend.
     """
@@ -57,14 +69,16 @@ class ToolServer:
             title="BMTools",
             description="Tools for bigmodels",
         )
-        self.loaded_tools = set()
+        self.loaded_tools = dict()
+        self.retriever = Retriever()
         _bind_tool_server(self)
     
     def load_tool(self, name : str, config = {}):
         if self.is_loaded(name):
             raise ValueError(f"Tool {name} is already loaded")
-        self.loaded_tools.add(name)
         tool = build_tool(name, config)
+        self.loaded_tools[name] = tool.api_info
+        self.retriever.add_tool(name, tool.api_info)
 
         # mount sub API server to the root API server, thus can mount all urls of sub API server to /tools/{name} route
         self.api.mount(f"/tools/{name}", tool, name)
@@ -78,4 +92,6 @@ class ToolServer:
 
     def list_tools(self) -> List[str]:
         return list_tools()
-    
+
+    def retrieve(self, query: str, topk: int = 3) -> List[str]:
+        return self.retriever.query(query, topk)
