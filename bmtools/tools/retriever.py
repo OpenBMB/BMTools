@@ -42,7 +42,7 @@ class Retriever:
         return sum([i * j for i, j in zip(query, document)])
 
 if __name__ == "__main__":
-    openai_api_key = "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"
+    openai_api_key = os.environ.get('OPENAI_API_KEY')
     model = "text-embedding-ada-002"
 
     retriever = Retriever(openai_api_key=openai_api_key, model=model)
