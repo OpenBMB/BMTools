@@ -9,6 +9,8 @@ import yaml
 from bmtools.agent.apitool import RequestTool
 from bmtools.agent.executor import Executor, AgentExecutorWithTranslation
 from bmtools import get_logger
+from bmtools.agent.BabyagiTools import BabyAGI
+# from bmtools.models.customllm import CustomLLM
 
 logger = get_logger(__name__)
 
@@ -93,7 +95,6 @@ class STQuestionAnswerer:
         if prompt_type == "zero-shot-react-description":
             subagent = initialize_agent(self.all_tools_map[name], self.llm, agent="zero-shot-react-description", verbose=True, return_intermediate_steps=return_intermediate_steps)
         elif prompt_type == "react-with-tool-description":
-
             description_for_model = meta_info['description_for_model'].replace("{", "{{").replace("}", "}}").strip()
 
             prefix = f"""Answer the following questions as best you can. General instructions are: {description_for_model}. Specifically, you have access to the following APIs:"""
@@ -114,8 +115,57 @@ class STQuestionAnswerer:
             else:
                 agent_executor = AgentExecutorWithTranslation.from_agent_and_tools(agent=agent, tools=self.all_tools_map[name], verbose=True, return_intermediate_steps=return_intermediate_steps)
             return agent_executor
+        elif prompt_type == "babyagi":
+            prefix = """You are an AI who performs one task based on the following objective: {objective}. Take into account these previously completed tasks: {context}."""
+            suffix = """Question: {task}
+            {agent_scratchpad}"""
+            prompt = ZeroShotAgent.create_prompt(
+                self.all_tools_map[name], 
+                prefix=prefix, 
+                suffix=suffix, 
+                input_variables=["objective", "task", "context","agent_scratchpad"]
+            )
 
-        return subagent
+            logger.info("Full prompt template: {}".format(prompt.template))
+
+            # customllm = CustomLLM()
+
+            baby_agi = BabyAGI.from_llm(
+                llm=self.llm,
+                prompt=prompt,
+                verbose=False,
+                tools=self.all_tools_map[name],
+                stream_output=self.stream_output,
+                return_intermediate_steps=return_intermediate_steps,
+                max_iterations=10
+            )
+
+            return baby_agi
+        # elif prompt_type == "babyagi":
+        #     description_for_model = meta_info['description_for_model'].replace("{", "{{").replace("}", "}}").strip()
+        #     prefix = f"""Answer the following questions as best you can. General instructions are: {description_for_model}. Specifically, you have access to the following APIs:"""
+        #     suffix = """You are an AI who performs one task based on the following objective: {objective}. Take into account these previously completed tasks: {context}. Remember: (1) Follow the format, i.e,\nThought:\nAction:\nAction Input:\nObservation:\nFinal Answer:\n (2) Provide as much as useful information in your Final Answer. (3) YOU MUST INCLUDE all relevant IMAGES in your Final Answer using format ![img](url), and include relevant links. (3) Do not make up anything, and if your Observation has no link, DO NOT hallucihate one. (4) If you have enough information, please use \nThought: I have got enough information\nFinal Answer: \n\nQuestion: {task}\n{agent_scratchpad}"""
+
+        #     prompt = ZeroShotAgent.create_prompt(
+        #         self.all_tools_map[name], 
+        #         prefix=prefix, 
+        #         suffix=suffix, 
+        #         input_variables=["objective", "task", "context","agent_scratchpad"]
+        #     )
+
+        #     logger.info("Full prompt template: {}".format(prompt.template))
+
+        #     baby_agi = BabyAGI.from_llm(
+        #         llm=self.llm,
+        #         prompt=prompt,
+        #         verbose=False,
+        #         tools=self.all_tools_map[name],
+        #         stream_output=self.stream_output,
+        #         return_intermediate_steps=return_intermediate_steps,
+        #         max_iterations=10
+        #     )
+
+        #     return baby_agi
 
 
 if __name__ == "__main__":

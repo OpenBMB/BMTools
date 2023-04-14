@@ -189,7 +189,6 @@ class BabyAGI(Chain, BaseModel):
         verbose: bool = False,
         tools = None,
         stream_output = None,
-        return_intermediate_steps = None,
         **kwargs
     ) -> "BabyAGI":
         embeddings_model = OpenAIEmbeddings()
@@ -208,9 +207,9 @@ class BabyAGI(Chain, BaseModel):
         agent = ZeroShotAgent(llm_chain=llm_chain, allowed_tools=tool_names)
 
         if stream_output:
-            agent_executor = Executor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, return_intermediate_steps=return_intermediate_steps)
+            agent_executor = Executor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
         else:
-            agent_executor = AgentExecutorWithTranslation.from_agent_and_tools(agent=agent, tools=tools, verbose=True, return_intermediate_steps=return_intermediate_steps)
+            agent_executor = AgentExecutorWithTranslation.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
 
         return cls(
             task_creation_chain=task_creation_chain,
@@ -252,7 +251,7 @@ if __name__ == "__main__":
     # Logging of LLMChains
     verbose=False
     # If None, will keep on going forever
-    max_iterations: Optional[int] = 3
+    max_iterations: Optional[int] = 10
     baby_agi = BabyAGI.from_llm(
         llm=llm,
         verbose=verbose,

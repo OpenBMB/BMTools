@@ -8,6 +8,8 @@ This project is inspired by the open-source project [LangChain](https://github.c
 
 Current version of BMTools is far from perfect, we will continue to improve it. 
 
+## What's New
+- 2023/4/14 [BabyAGI](https://github.com/yoheinakajima/babyagi) is supported in BMTools.
 
 ## 1. Setup
 
