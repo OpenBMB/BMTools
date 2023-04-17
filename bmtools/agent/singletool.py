@@ -1,6 +1,6 @@
 from langchain.llms import OpenAI
-from langchain import OpenAI, LLMChain
-from langchain.agents import ZeroShotAgent, AgentExecutor, initialize_agent
+from langchain import OpenAI, LLMChain, PromptTemplate, SerpAPIWrapper
+from langchain.agents import ZeroShotAgent, AgentExecutor, initialize_agent, Tool
 import importlib
 import json
 import os
@@ -11,6 +11,7 @@ from bmtools.agent.executor import Executor, AgentExecutorWithTranslation
 from bmtools import get_logger
 from bmtools.agent.BabyagiTools import BabyAGI
 # from bmtools.models.customllm import CustomLLM
+
 
 logger = get_logger(__name__)
 
@@ -99,7 +100,6 @@ class STQuestionAnswerer:
 
             prefix = f"""Answer the following questions as best you can. General instructions are: {description_for_model}. Specifically, you have access to the following APIs:"""
             suffix = """Begin! Remember: (1) Follow the format, i.e,\nThought:\nAction:\nAction Input:\nObservation:\nFinal Answer:\n (2) Provide as much as useful information in your Final Answer. (3) YOU MUST INCLUDE all relevant IMAGES in your Final Answer using format ![img](url), and include relevant links. (3) Do not make up anything, and if your Observation has no link, DO NOT hallucihate one. (4) If you have enough information, please use \nThought: I have got enough information\nFinal Answer: \n\nQuestion: {input}\n{agent_scratchpad}"""
-
             prompt = ZeroShotAgent.create_prompt(
                 self.all_tools_map[name], 
                 prefix=prefix, 
@@ -116,9 +116,38 @@ class STQuestionAnswerer:
                 agent_executor = AgentExecutorWithTranslation.from_agent_and_tools(agent=agent, tools=self.all_tools_map[name], verbose=True, return_intermediate_steps=return_intermediate_steps)
             return agent_executor
         elif prompt_type == "babyagi":
-            prefix = """You are an AI who performs one task based on the following objective: {objective}. Take into account these previously completed tasks: {context}."""
-            suffix = """Question: {task}
-            {agent_scratchpad}"""
+            # customllm = CustomLLM()
+            tool_str = "; ".join([t.name for t in self.all_tools_map[name]] + ["TODO"])
+            prefix = """You are an AI who performs one task based on the following objective: {objective}. Take into account these previously completed tasks: {context}.\n You have access to the following APIs:"""
+            suffix = """YOUR CONSTRAINTS: (1) When saying anything, YOU MUST follow this format:
+            \nThought:\nAction:\nAction Input: \n or \nThought:\nFinal Answer:\n (2) Do not make up anything, and if your Observation has no link, DO NOT hallucihate one. (3) The Action must be one of the following: """ + tool_str + """\nQuestion: {task}\n Agent scratchpad (history actions): {agent_scratchpad}."""
+
+            todo_prompt = PromptTemplate.from_template("You are a planner who is an expert at coming up with a todo list for a given objective. Come up with a todo list for this objective: {objective}")
+            todo_chain = LLMChain(llm=self.llm, prompt=todo_prompt)
+            # todo_chain = LLMChain(llm=customllm, prompt=todo_prompt)
+
+            # search = SerpAPIWrapper()
+            # tools = [
+            #     Tool(
+            #         name="Search",
+            #         func=search.run,
+            #         description="useful for when you need to answer questions about current events",
+            #     ),
+            #     Tool(
+            #         name="TODO",
+            #         func=todo_chain.run,
+            #         description="useful for when you need to come up with todo lists. Input: an objective to create a todo list for. Output: a todo list for that objective. Please be very clear what the objective is!",
+            #     ),
+            # ]
+            # self.all_tools_map[name] = tools
+
+            todo_tool = Tool(
+                name = "TODO",
+                func=todo_chain.run,
+                description="useful for when you need to come up with todo lists. Input: an objective to create a todo list for. Output: a todo list for that objective. Please be very clear what the objective is!"
+            )
+            self.all_tools_map[name].append(todo_tool)
+
             prompt = ZeroShotAgent.create_prompt(
                 self.all_tools_map[name], 
                 prefix=prefix, 
@@ -128,44 +157,20 @@ class STQuestionAnswerer:
 
             logger.info("Full prompt template: {}".format(prompt.template))
 
-            # customllm = CustomLLM()
-
+            # specify the maximum number of iterations you want babyAGI to perform
+            max_iterations = 10
             baby_agi = BabyAGI.from_llm(
                 llm=self.llm,
+                # llm=customllm,
                 prompt=prompt,
                 verbose=False,
                 tools=self.all_tools_map[name],
                 stream_output=self.stream_output,
                 return_intermediate_steps=return_intermediate_steps,
-                max_iterations=10
+                max_iterations=max_iterations,
             )
 
             return baby_agi
-        # elif prompt_type == "babyagi":
-        #     description_for_model = meta_info['description_for_model'].replace("{", "{{").replace("}", "}}").strip()
-        #     prefix = f"""Answer the following questions as best you can. General instructions are: {description_for_model}. Specifically, you have access to the following APIs:"""
-        #     suffix = """You are an AI who performs one task based on the following objective: {objective}. Take into account these previously completed tasks: {context}. Remember: (1) Follow the format, i.e,\nThought:\nAction:\nAction Input:\nObservation:\nFinal Answer:\n (2) Provide as much as useful information in your Final Answer. (3) YOU MUST INCLUDE all relevant IMAGES in your Final Answer using format ![img](url), and include relevant links. (3) Do not make up anything, and if your Observation has no link, DO NOT hallucihate one. (4) If you have enough information, please use \nThought: I have got enough information\nFinal Answer: \n\nQuestion: {task}\n{agent_scratchpad}"""
-
-        #     prompt = ZeroShotAgent.create_prompt(
-        #         self.all_tools_map[name], 
-        #         prefix=prefix, 
-        #         suffix=suffix, 
-        #         input_variables=["objective", "task", "context","agent_scratchpad"]
-        #     )
-
-        #     logger.info("Full prompt template: {}".format(prompt.template))
-
-        #     baby_agi = BabyAGI.from_llm(
-        #         llm=self.llm,
-        #         prompt=prompt,
-        #         verbose=False,
-        #         tools=self.all_tools_map[name],
-        #         stream_output=self.stream_output,
-        #         return_intermediate_steps=return_intermediate_steps,
-        #         max_iterations=10
-        #     )
-
-        #     return baby_agi
 
 
 if __name__ == "__main__":
