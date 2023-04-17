@@ -41,33 +41,3 @@ class Retriever:
     def similarity(self, query: List[float], document: List[float]) -> float:
         return sum([i * j for i, j in zip(query, document)])
 
-if __name__ == "__main__":
-    openai_api_key = os.environ.get('OPENAI_API_KEY')
-    model = "text-embedding-ada-002"
-
-    retriever = Retriever(openai_api_key=openai_api_key, model=model)
-
-    tool_set = {
-        "douban": {
-            "schema_version": "v1",
-            "name_for_human": "Film Search Plugin",
-            "name_for_model": "Film Search",
-            "description_for_human": "search for up-to-date film information.",
-            "description_for_model": "Plugin for search for up-to-date film information.",
-        },
-        "baidu": {
-            "schema_version": "v1",
-            "name_for_human": "Translator Info",
-            "name_for_model": "Translator",
-            "description_for_human": "Translate a given text from one language to another.",
-            "description_for_model": "Plugin for translating text from one language to another.",
-        }
-    }
-
-    query = "I need some films."
-
-    for tool_name, tool_info in tool_set.items():
-        retriever.add_tool(tool_name, tool_info)
-
-    result = retriever.query(query)
-    print(result)

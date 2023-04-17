@@ -14,27 +14,6 @@ from langchain.docstore import InMemoryDocstore
 from langchain.agents import ZeroShotAgent, Tool, AgentExecutor
 from bmtools.agent.executor import Executor, AgentExecutorWithTranslation
 
-class ContextAwareAgent(ZeroShotAgent):
-    def get_full_inputs(
-            self, intermediate_steps, **kwargs: Any
-        ) -> Dict[str, Any]:
-            """Create the full inputs for the LLMChain from intermediate steps."""
-            thoughts = self._construct_scratchpad(intermediate_steps)
-            new_inputs = {"agent_scratchpad": thoughts, "stop": self._stop}
-            full_inputs = {**kwargs, **new_inputs}
-            return full_inputs
-    
-    def _construct_scratchpad(
-            self, intermediate_steps):
-            """Construct the scratchpad that lets the agent continue its thought process."""
-            thoughts = ""
-            # only modify the following line, [-2: ]
-            for action, observation in intermediate_steps[-2: ]:
-                thoughts += action.log
-                thoughts += f"\n{self.observation_prefix}{observation}\n{self.llm_prefix}"
-            return thoughts
-
-
 class TaskCreationChain(LLMChain):
     """Chain to generates tasks."""
 
@@ -157,7 +136,7 @@ class BabyAGI(Chain, BaseModel):
     def _call(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Run the agent."""
         objective = inputs['objective']
-        first_task = inputs.get("first_task", f"Make a todo list about this objective: {objective}")
+        first_task = inputs.get("first_task", "Make a todo list")
         self.add_task({"task_id": 1, "task_name": first_task})
         num_iters = 0
         while True:
@@ -225,7 +204,7 @@ class BabyAGI(Chain, BaseModel):
         )
         llm_chain = LLMChain(llm=llm, prompt=prompt)
         tool_names = [tool.name for tool in tools]
-        agent = ContextAwareAgent(llm_chain=llm_chain, allowed_tools=tool_names)
+        agent = ZeroShotAgent(llm_chain=llm_chain, allowed_tools=tool_names)
 
         if stream_output:
             agent_executor = Executor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
