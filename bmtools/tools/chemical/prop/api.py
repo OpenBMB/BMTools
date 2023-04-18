@@ -1,10 +1,53 @@
 import requests
 from pydantic import BaseModel
-import numpy as np
 from bs4 import BeautifulSoup
-import json
+import json, random
 from ...tool import Tool
 from typing import List, Optional, Union
+
+class ChemicalPropAPI:
+    def __init__(self) -> None:
+        self._endpoint = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/"
+
+    def get_name_by_cid(self, cid : str, top_k : Optional[int] = None) -> List[str]:
+        html_doc = requests.get(f"{self._endpoint}cid/{cid}/synonyms/XML").text
+        soup = BeautifulSoup(html_doc, "html.parser", from_encoding="utf-8")
+        syns = soup.find_all('synonym')
+        ans = []
+        if top_k is None:
+            top_k = len(syns)
+        for syn in syns[:top_k]:
+            ans.append(syn.text)
+        return ans
+    
+    def get_cid_by_struct(self, smiles : str) -> List[str]:
+        html_doc = requests.get(f"{self._endpoint}smiles/{smiles}/cids/XML").text
+        soup = BeautifulSoup(html_doc,"html.parser",from_encoding="utf-8")
+        cids = soup.find_all('cid')
+        if cids is None:
+            return []
+        ans = []
+        for cid in cids:
+            ans.append(cid.text)
+        return ans
+    
+    def get_cid_by_name(self, name : str, name_type : Optional[str] = None) -> List[str]:
+        url = f"{self._endpoint}name/{name}/cids/XML"
+        if name_type is not None:
+            url += f"?name_type={name_type}"
+        html_doc = requests.get(url).text
+        soup = BeautifulSoup(html_doc,"html.parser",from_encoding="utf-8")
+        cids = soup.find_all('cid')
+        if cids is None:
+            return []
+        ans = []
+        for cid in cids:
+            ans.append(cid.text)
+        return ans
+    
+    def get_prop_by_cid(self, cid : str) -> str:
+        html_doc = requests.get(f"{self._endpoint}cid/{cid}/property/MolecularFormula,MolecularWeight,CanonicalSMILES,IsomericSMILES,IUPACName,XLogP,ExactMass,MonoisotopicMass,TPSA,Complexity,Charge,HBondDonorCount,HBondAcceptorCount,RotatableBondCount,HeavyAtomCount,CovalentUnitCount/json").text
+        return json.loads(html_doc)['PropertyTable']['Properties'][0]
 
 class GetNameResponse(BaseModel):
     
@@ -32,88 +75,76 @@ def build_tool(config) -> Tool:
         contact_email="hello@contact.com",
         legal_info_url="hello@legal.com",
     )
-    QRY = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/'
+
+    if "debug" in config and config["debug"]:
+        chemical_prop_api = config["chemical_prop_api"]
+    else:
+        chemical_prop_api = ChemicalPropAPI()
 
     @tool.get("/get_name")
     def get_name( cid: str ):
         """prints the possible 3 synonyms of the queried compound ID"""
-        html_doc = requests.get(QRY+'cid/'+str(cid)+'/synonyms/XML').text
-        soup = BeautifulSoup(html_doc,"html.parser",from_encoding="utf-8")
-        syns = soup.find_all('synonym')
-        ans = []
-        kk = 3
-        for syn in syns[:kk]:
-            ans.append(syn.text)
-
-        js = {'names':ans}
-        return js
+        ans = chemical_prop_api.get_name_by_cid(cid, top_k=3)
+        return {
+            "names": ans
+        }
 
     @tool.get("/get_allname")
     def get_allname( cid: str ):
         """prints all the possible synonyms (might be too many, use this function carefully).
         """
-        html_doc = requests.get(QRY+'cid/'+str(cid)+'/synonyms/XML').text
-        soup = BeautifulSoup(html_doc,"html.parser",from_encoding="utf-8")
-        syns = soup.find_all('synonym')
-        ans = []
-        for syn in syns:
-            ans.append(syn.text)
-
-        js = {'names':ans}
-        return js
+        ans = chemical_prop_api.get_name_by_cid(cid)
+        return {
+            "names": ans
+        }
 
     @tool.get("/get_id_by_struct")
     def get_id_by_struct(smiles : str):
         """prints the ID of the queried compound SMILES. This should only be used if smiles is provided or retrieved in the previous step. The input should not be a string, but a SMILES formula.
         """
-        html_doc = requests.get(QRY+'smiles/'+smiles+'/cids/XML').text
-        soup = BeautifulSoup(html_doc,"html.parser",from_encoding="utf-8")
-        cids = soup.find_all('cid')
-        if cids is not None:#len(cids)==1:
-            if len(cids)==1:
-                ans = cids[0].text
-                js = {'state': 'matched', 'content': ans}
-                return js
-        js = {'state': 'no result'}
-        return js
+        cids = chemical_prop_api.get_cid_by_struct(smiles)
+        if len(cids) == 0:
+            return {
+                "state": "no result"
+            }
+        else:
+            return {
+                "state": "matched",
+                "content": cids[0]
+            }
 
     @tool.get("/get_id")
     def get_id(name : str):
         """prints the ID of the queried compound name, and prints the possible 5 names if the queried name can not been precisely matched,
         """
-
-        html_doc = requests.get(QRY+'name/'+name+'/cids/XML').text
-        soup = BeautifulSoup(html_doc,"html.parser",from_encoding="utf-8")
-        cids = soup.find_all('cid')
-        if cids is not None:#len(cids)==1:
-            if len(cids)>0:
-                ans = cids[0].text
-                js = {'state':'precise', 'content':ans}
-                return js
-        html_doc = requests.get(QRY+'name/'+name+'/cids/XML?name_type=word').text
-        soup = BeautifulSoup(html_doc,"html.parser",from_encoding="utf-8")
-        cids = soup.find_all('cid')
+        cids = chemical_prop_api.get_cid_by_name(name)
         if len(cids) > 0:
-            if name in get_name(cids[0].text, ifprint=0):
-                ans = cids[0].text
-                js = {'state':'precise', 'content':ans}
-                return js
+            return {
+                "state": "precise",
+                "content": cids[0]
+            }
+        
+        cids = chemical_prop_api.get_cid_by_name(name, name_type="word")
+        if len(cids) > 0:
+            if name in get_name(cids[0]):
+                return {
+                    "state": "precise",
+                    "content": cids[0]
+                }
+        
         ans = []
-        seq = np.arange(len(cids))
-        np.random.shuffle(seq)
-        for sq in seq[:5]:
-            cid = cids[sq]
-            nms = get_name(cid.text, ifprint=0)
+        random.shuffle(cids)
+        for cid in cids[:5]:
+            nms = get_name(cid)
             ans.append(nms)
-        js = {'state':'not precise', 'content':ans}
-        print(js)
-        return js
+        return {
+            "state": "not precise",
+            "content": ans
+        }
 
     @tool.get("/get_prop")
     def get_prop(cid : str):
         """prints the properties of the queried compound ID
         """
-        html_doc = requests.get(QRY+'cid/'+cid+'/property/MolecularFormula,MolecularWeight,CanonicalSMILES,IsomericSMILES,IUPACName,XLogP,ExactMass,MonoisotopicMass,TPSA,Complexity,Charge,HBondDonorCount,HBondAcceptorCount,RotatableBondCount,HeavyAtomCount,CovalentUnitCount/json').text
-        js = json.loads(html_doc)['PropertyTable']['Properties'][0]
-        return js
+        return chemical_prop_api.get_prop_by_cid(cid)
     return tool
