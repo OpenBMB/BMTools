@@ -7,6 +7,7 @@ from . import wikipedia
 from . import wolframalpha
 from . import office
 from . import bing_search
+from . import map
 from . import translation
 from . import tutorial
 

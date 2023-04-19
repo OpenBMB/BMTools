@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-from ..tool import Tool, Request
+from ..tool import Tool
+from fastapi import Request
 from uuid import UUID
 
 def clean_str(p):

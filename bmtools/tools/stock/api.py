@@ -4,8 +4,6 @@ import json
 import os
 from ..tool import Tool
 
-alphavantage_key = os.getenv("ALPHA_VANTAGE_KEY", None)
-
 def build_tool(config) -> Tool:
     tool = Tool(
         "Stock Info",
@@ -20,9 +18,7 @@ def build_tool(config) -> Tool:
     functions = ['TIME_SERIES_INTRADAY', 'TIME_SERIES_INTRADAY_EXTENDED','TIME_SERIES_DAILY', 'TIME_SERIES_DAILY_ADJUSTED']
     types = ['open', 'close', 'high', 'low']
 
-    KEY = config["key"]
-    if alphavantage_key is not None:
-        KEY = os.getenv("ALPHA_VANTAGE_KEY", None)
+    KEY = config["subscription_key"]
     BASE_URL = 'https://www.alphavantage.co/query?'
         
     def get_json_data(function, symbol, interval = '5min', adjusted='true', outputsize='compact', datatype='json'):
