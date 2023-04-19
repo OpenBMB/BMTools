@@ -5,6 +5,7 @@ from bmtools.agent.tools_controller import MTQuestionAnswerer, load_valid_tools
 from bmtools.agent.singletool import STQuestionAnswerer
 from langchain.schema import AgentFinish
 import os
+import requests
 
 available_models = ["ChatGPT", "GPT-3.5"]
 DEFAULTMODEL = "GPT-3.5"
@@ -26,6 +27,7 @@ tools_mappings = {
 
 valid_tools_info = load_valid_tools(tools_mappings)
 print(valid_tools_info)
+all_tools_list = sorted(list(valid_tools_info.keys()))
 
 gr.close_all()
 
@@ -40,9 +42,12 @@ def show_avatar_imgs(tools_chosen):
     imgs = ' '.join([img_template.format(img, img, tool ) for img, tool in zip(imgs, tools_chosen) ])
     return [gr.update(value='<span class="">'+imgs+'</span>', visible=True), gr.update(visible=True)]
 
+return_msg = []
+chat_history = ""
 
 def answer_by_tools(question, tools_chosen, model_chosen):
-    return_msg = [(question, None), (None, '...')]
+    global return_msg
+    return_msg += [(question, None), (None, '...')]
     yield [gr.update(visible=True, value=return_msg), gr.update(), gr.update()]
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
     
@@ -57,21 +62,28 @@ def answer_by_tools(question, tools_chosen, model_chosen):
 
         agent_executor = answerer.build_runner()
 
+    global chat_history
+    chat_history += "Question: " + question + "\n"
+    question = chat_history
     for inter in agent_executor(question):
         if isinstance(inter, AgentFinish): continue
         result_str = []
         return_msg.pop()
         if isinstance(inter, dict): 
-            
             result_str.append("<font color=red>Answer:</font> {}".format(inter['output']))
+            chat_history += "Answer:" + inter['output'] + "\n"
             result_str.append("...")
         else:
             not_observation = inter[0].log
+            if not not_observation.startswith('Thought:'):
+                not_observation = "Thought: " + not_observation
+            chat_history += not_observation
             not_observation = not_observation.replace('Thought:', '<font color=green>Thought: </font>')
             not_observation = not_observation.replace('Action:', '<font color=purple>Action: </font>')
             not_observation = not_observation.replace('Action Input:', '<font color=purple>Action Input: </font>')
             result_str.append("{}".format(not_observation))
             result_str.append("<font color=blue>Action output:</font>\n{}".format(inter[1]))
+            chat_history += "\nAction output:" + inter[1] + "\n"
             result_str.append("...")
         return_msg += [(None, result) for result in result_str]
         yield [gr.update(visible=True, value=return_msg), gr.update(), gr.update()]
@@ -80,7 +92,28 @@ def answer_by_tools(question, tools_chosen, model_chosen):
         return_msg[-1] = (return_msg[-1][0], return_msg[-1][1].replace("<font color=red>Answer:</font> ", "<font color=green>Final Answer:</font> "))
     yield [gr.update(visible=True, value=return_msg), gr.update(visible=True), gr.update(visible=False)]
 
+def retrieve(tools_search):
+    if tools_search == "":
+        return gr.update(choices=all_tools_list)
+    else:
+        url = "http://127.0.0.1:8079/retrieve"
+        param = {
+            "query": tools_search
+        }
+        response = requests.post(url, json=param)
+        result = response.json()
+        retrieved_tools = result["tools"]
+        return gr.update(choices=retrieved_tools)
 
+def clear_retrieve():
+    return [gr.update(value=""), gr.update(choices=all_tools_list)]
+
+def clear_history():
+    global return_msg
+    global chat_history
+    return_msg = []
+    chat_history = ""
+    yield gr.update(visible=True, value=return_msg)
 
 with gr.Blocks() as demo:
     with gr.Row():
@@ -92,26 +125,37 @@ with gr.Blocks() as demo:
         with gr.Column(scale=4):
             with gr.Row():
                 with gr.Column(scale=0.85):
-                    txt = gr.TextArea(show_label=False, placeholder="Enter your question.", lines=1).style(container=False)
+                    txt = gr.Textbox(show_label=False, placeholder="Question here. Use Shift+Enter to add new line.", lines=1).style(container=False)
                 with gr.Column(scale=0.15, min_width=0):
-                    buttonStart = gr.Button("Ask")
+                    buttonClear = gr.Button("Clear History")
                     buttonStop = gr.Button("Stop", visible=False)
 
             chatbot = gr.Chatbot(show_label=False, visible=True).style(height=600)
 
         with gr.Column(scale=1):
+            with gr.Row():
+                tools_search = gr.Textbox(
+                    lines=1,
+                    label="Tools Search",
+                    info="Please input some text to search tools.",
+                )
+                buttonSearch = gr.Button("Clear")
             tools_chosen = gr.CheckboxGroup(
-                sorted(list(valid_tools_info.keys())),
-                value=["bing_search"],
+                choices=all_tools_list,
+                value=["chemical-prop"],
                 label="Tools provided",
                 info="Choose the tools to solve your question.",
             )
             model_chosen = gr.Dropdown(
                 list(available_models), value=DEFAULTMODEL, multiselect=False, label="Model provided", info="Choose the model to solve your question, Default means ChatGPT."
             )
-    buttonStart.click(lambda : [gr.update(value=''), gr.update(visible=False), gr.update(visible=True)], [], [txt, buttonStart, buttonStop])
-    inference_event = buttonStart.click(answer_by_tools, [txt, tools_chosen, model_chosen], [chatbot, buttonStart, buttonStop])
-    buttonStop.click(lambda : [gr.update(visible=True), gr.update(visible=False)], [], [buttonStart, buttonStop], cancels=[inference_event])
+    tools_search.change(retrieve, tools_search, tools_chosen)
+    buttonSearch.click(clear_retrieve, [], [tools_search, tools_chosen])
+
+    txt.submit(lambda : [gr.update(value=''), gr.update(visible=False), gr.update(visible=True)], [], [txt, buttonClear, buttonStop])
+    inference_event = txt.submit(answer_by_tools, [txt, tools_chosen, model_chosen], [chatbot, buttonClear, buttonStop])
+    buttonStop.click(lambda : [gr.update(visible=True), gr.update(visible=False)], [], [buttonClear, buttonStop], cancels=[inference_event])
+    buttonClear.click(clear_history, [], chatbot)
 
     
 
