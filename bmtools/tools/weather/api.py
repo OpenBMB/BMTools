@@ -15,7 +15,7 @@ def build_tool(config) -> Tool:
         legal_info_url="hello@legal.com"
     )
 
-    KEY = os.environ.get('WEATHER_API_KEY', '')
+    KEY = os.environ.get('WEATHER_API_KEYS', '')
     if KEY == '':
         raise RuntimeError("WEATHER_API_KEY not provided, please register one following https://www.weatherapi.com/docs/ and add it to environment variables.")
 
