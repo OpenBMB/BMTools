@@ -26,6 +26,7 @@ def build_tool(config) -> Tool:
     def get_weather_today(location : str):
         '''gets the weather
         '''
+        location = json.loads(location)["location"]
         param = {
             "key": KEY,
             "q": location
@@ -52,9 +53,11 @@ def build_tool(config) -> Tool:
         return text_output
             
     @tool.get("/forecast_weather")
-    def forecast_weather(location : str, days : str):
+    def forecast_weather(input_str):
         '''Forecast weather in the upcoming days. Args: - location: str - days: int
         '''
+        location = json.loads(input_str)["location"]
+        days = json.loads(input_str)["days"]
         param = {
             "key": KEY,
             "q": location,
