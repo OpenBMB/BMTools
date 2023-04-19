@@ -4,7 +4,7 @@ import os
 import json
 from ..tool import Tool
 
-map_key = os.getenv("MAP_KEY", None)
+map_key = os.getenv("BING_MAP_KEY", None)
 
 def build_tool(config) -> Tool:
     tool = Tool(
@@ -20,7 +20,7 @@ def build_tool(config) -> Tool:
 
     KEY = config["key"]
     if map_key is not None:
-        KEY = os.getenv("MAP_KEY", None)
+        KEY = map_key
     BASE_URL = 'http://dev.virtualearth.net/REST/V1/'
 
     @tool.get("/get_distance")
