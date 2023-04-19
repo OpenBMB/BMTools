@@ -2,36 +2,67 @@
 import requests
 from bs4 import BeautifulSoup
 from ..tool import Tool
-import os
 from enum import Enum
+from typing import Tuple
 
-subscription_key = os.getenv("BING_SUBSCRIPT_KEY", None)
-if subscription_key is None:
-    raise Exception("BING_SUBSCRIPT_KEY is not set")
-
-endpoint = "https://api.bing.microsoft.com/v7.0/search"
-mkt = 'en-US'
-headers = { 'Ocp-Apim-Subscription-Key': subscription_key }
 
 #  search result list chunk size
 SEARCH_RESULT_LIST_CHUNK_SIZE = 3
 #  result target page text chunk content length
 RESULT_TARGET_PAGE_PER_TEXT_COUNT = 500
 
-class Operation(Enum):
-    PAGE_DOWN = 'A'
-    PAGE_UP = 'B'
-    GO_BACK = 'C'
-    ADD_DIGEST = 'D'
-    MERGE = 'E'
-    LOAD_PAGE_1 = 'F'
-    LOAD_PAGE_2 = 'G'
-    LOAD_PAGE_3 = 'H'
-    END = 'I'
-    SEARCH = 'J'
-    START = 'K'
-    REJECT = 'L'
-    TO_TOP = 'M'
+class BingAPI:
+    def __init__(self, subscription_key : str) -> None:
+        self._headers = {
+            'Ocp-Apim-Subscription-Key': subscription_key
+        }
+        self._endpoint = "https://api.bing.microsoft.com/v7.0/search"
+        self._mkt = 'en-US'
+    
+    def search(self, key_words : str, max_retry : int = 3):
+        for _ in range(max_retry):
+            try:
+                result = requests.get(self._endpoint, headers=self._headers, params={'q': key_words, 'mkt': self._mkt }, timeout=10)
+            except Exception:
+                # failed, retry
+                continue
+
+            if result.status_code == 200:
+                result = result.json()
+                # search result returned here
+                return result
+            else:
+                # failed, retry
+                continue
+        raise RuntimeError("Failed to access Bing Search API.")
+    
+    def load_page(self, url : str, max_retry : int = 3) -> Tuple[bool, str]:
+        for _ in range(max_retry):
+            try:
+                res = requests.get(url, timeout=15)
+                if res.status_code == 200:
+                    res.raise_for_status()
+                else:
+                    raise RuntimeError("Failed to load page, code {}".format(res.status_code))
+            except Exception:
+                # failed, retry
+                res = None
+                continue
+            res.encoding = res.apparent_encoding
+            content = res.text
+            break
+        if res is None:
+            return False, "Timeout for loading this page, Please try to load another one or search again."
+        try:
+            soup = BeautifulSoup(content, 'html.parser')
+            paragraphs = soup.find_all('p')
+            page_detail = ""
+            for p in paragraphs:
+                text = p.get_text().strip()
+                page_detail += text
+            return True, page_detail
+        except Exception:
+            return False, "Timeout for loading this page, Please try to load another one or search again."
 
 class CONTENT_TYPE(Enum):
     SEARCH_RESULT = 0
@@ -75,6 +106,11 @@ Use load_page_index(idx: int) to load the detailed page of the search result."""
         legal_info_url="hello@legal.com"
     )
 
+    if "debug" in config and config["debug"]:
+        bing_api = config["bing_api"]
+    else:
+        bing_api = BingAPI(config["subscription_key"])
+
     @tool.get("/search_top3")
     def search_top3(key_words: str) -> str:
         """Search key words, return top 3 search results.
@@ -92,25 +128,10 @@ Use load_page_index(idx: int) to load the detailed page of the search result."""
         Keyword arguments:
         key_words -- key words want to search
         """
-        try:
-            result = requests.get(endpoint, headers=headers, params={'q': key_words, 'mkt': mkt }, timeout=10)
-        except Exception:
-            result = requests.get(endpoint, headers=headers, params={'q': key_words, 'mkt': mkt }, timeout=10)
-        if result.status_code == 200:
-            result = result.json()
-            data.content = []
-            data.content.append(ContentItem(CONTENT_TYPE.SEARCH_RESULT, result))
-            data.curResultChunk = 0
-        else:
-            result = requests.get(endpoint, headers=headers, params={'q': key_words, 'mkt': mkt }, timeout=10)
-            if result.status_code == 200:
-                result = result.json()
-                data.content = []
-                data.content.append(ContentItem(CONTENT_TYPE.SEARCH_RESULT, result))
-                data.curResultChunk = 0
-            else:
-                raise Exception('Platform search error.')
-        # print(f'search time:{time.time() - start_time}s')
+        result = bing_api.search(key_words)
+        data.content = []
+        data.content.append(ContentItem(CONTENT_TYPE.SEARCH_RESULT, result))
+        data.curResultChunk = 0
         return data.content[-1].data["webPages"]["value"]
 
     @tool.get("/load_page_index")
@@ -124,27 +145,12 @@ Use load_page_index(idx: int) to load the detailed page of the search result."""
         else:
             return text
 
-    def load_page(idx:int, data: SessionData = data):
-        try:
-            top = data.content[-1].data["webPages"]["value"]
-            res = requests.get(top[idx]['url'], timeout=15)
-            if res.status_code == 200:
-                res.raise_for_status()
-                res.encoding = res.apparent_encoding
-                content = res.text
-                soup = BeautifulSoup(content, 'html.parser')
-                paragraphs = soup.find_all('p')
-                page_detail = ""
-                for p in paragraphs:
-                    text = p.get_text().strip()
-                    page_detail += text
-                # trafilatura may be used to extract the main content of the page
-                # import trafilatura
-                # page_detail = trafilatura.extract(soup, timeout=60)
-                return top[idx]['url'], page_detail
-            else:
-                return " ", "Timeout for loading this page, Please try to load another one or search again."
-        except:
+    def load_page(idx : int, data: SessionData = data):
+        top = data.content[-1].data["webPages"]["value"]
+        ok, content = bing_api.load_page(top[idx]['url'])
+        if ok:
+            return top[idx]['url'], content
+        else:
             return " ", "Timeout for loading this page, Please try to load another one or search again."
-    
+        
     return tool

@@ -1,8 +1,6 @@
 import fastapi
 from typing import Optional
 import copy
-from starlette.middleware.sessions import SessionMiddleware
-from fastapi import Request
 
 class Tool(fastapi.FastAPI):
     """ Tool is inherited from FastAPI class, thus:
@@ -77,11 +75,3 @@ class Tool(fastapi.FastAPI):
             info = copy.deepcopy(self.api_info)
             info["api"]["url"] = str(openapi_path)
             return info
-
-
-        self.add_middleware(
-            SessionMiddleware,
-            secret_key=tool_name,
-            session_cookie="session_{}".format(tool_name.replace(" ", "_")),
-        )
-        

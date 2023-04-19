@@ -1,42 +1,47 @@
 import requests
 from lxml import etree
 import pandas as pd
-from translate import Translator
 import re
 from ...tool import Tool
+from typing import List
+from typing_extensions import TypedDict
 
+class ComingMovieInfo(TypedDict):
+    date : str
+    title : str
+    cate : str
+    region : str
+    wantWatchPeopleNum : str
+    link : str
 
-def build_tool(config) -> Tool:
-    tool = Tool(
-        "Film Search Plugin",
-        "search for up-to-date film information.",
-        name_for_model="Film Search",
-        description_for_model="Plugin for search for up-to-date film information.",
-        logo_url="https://your-app-url.com/.well-known/logo.png",
-        contact_email="hello@contact.com",
-        legal_info_url="hello@legal.com"
-    )
-    
-    def fetch_page(url : str):
-        """get_name(url: str) print html text of url
-        """
-        headers = {
+class PlayingMovieInfo(TypedDict):
+    title : str
+    score : str
+    region : str
+    director : str
+    actors : str
+    link : str
+
+class DoubanAPI:
+    def __init__(self) -> None:
+        self._endpoint = "https://movie.douban.com"
+        self._headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                                'Chrome/108.0.0.0 Safari/537.36'}
+                          'Chrome/108.0.0.0 Safari/537.36'
+        }
+
+    def fetch_page(self, url: str):
+        """fetch_page(url: str) print html text of url
+        """
         s = requests.session()
         s.keep_alive = False
-        response = s.get(url, headers=headers, verify=False)
+        response = s.get(url, headers=self._headers, verify=False)
 
         return response
-
-    def parse_coming_page():
-        """parse_coming_page() prints the details of the all coming films, including date, title, cate, region, wantWatchPeopleNum, link
-        """
-        # 获取即将上映的电影列表
-        url = 'https://movie.douban.com/coming'
-        response = fetch_page(url)
-
-        df_filmsComing = pd.DataFrame(columns=["date", "title", "cate", "region", "wantWatchPeopleNum", 'link'])
+    
+    def get_coming(self) -> List[ComingMovieInfo]:
+        response = self.fetch_page(f"{self._endpoint}/coming")
+        ret : List[ComingMovieInfo] = []
 
         parser = etree.HTMLParser(encoding='utf-8')
         tree = etree.HTML(response.text, parser=parser)
@@ -50,18 +55,20 @@ def build_tool(config) -> Tool:
             filmRegion = filmChild.xpath('td[4]/text()')[0].strip()
             filmWantWatching = filmChild.xpath('td[5]/text()')[0].strip()
             filmLink = filmChild.xpath('td[2]/a/@href')[0]
-            df_filmsComing.loc[len(df_filmsComing.index)] = [
-                filmTime, filmName, filmType, filmRegion, filmWantWatching, filmLink
-            ]
-        return df_filmsComing
+            ret.append(ComingMovieInfo(
+                date=filmTime,
+                title=filmName,
+                cate=filmType,
+                region=filmRegion,
+                wantWatchPeopleNum=filmWantWatching,
+                link=filmLink
+            ))
+        return ret
     
-    def parse_nowplaying_page():
-        """parse_nowplaying_page() prints the details of the all playing films now, including title, score, region, director, actors, link
-        """
-        # 获取正在上映的电影列表
-        url = 'https://movie.douban.com/cinema/nowplaying/beijing/'
-        response = fetch_page(url)
-        df_filmsNowPlaying = pd.DataFrame(columns=["title", "score", "region", "director", "actors", 'link'])
+    def get_now_playing(self) -> List[PlayingMovieInfo]:
+        # 获取正在上映的电影列表，不同城市的电影列表是一样的
+        response = self.fetch_page(f"{self._endpoint}/cinema/nowplaying/beijing/")
+        ret : List[PlayingMovieInfo] = []
 
         parser = etree.HTMLParser(encoding='utf-8')
         tree = etree.HTML(response.text, parser=parser)
@@ -75,14 +82,18 @@ def build_tool(config) -> Tool:
             filmDirector = filmChild.xpath('@data-director')[0]
             filmActors = filmChild.xpath('@data-actors')[0]
             filmLink = filmChild.xpath('ul/li[1]/a/@href')[0]
-            df_filmsNowPlaying.loc[len(df_filmsNowPlaying.index)] = [
-                filmName, filmScore, filmRegion, filmDirector, filmActors, filmLink
-            ]
-        return df_filmsNowPlaying
+            ret.append(PlayingMovieInfo(
+                title=filmName,
+                score=filmScore,
+                region=filmRegion,
+                director=filmDirector,
+                actors=filmActors,
+                link=filmLink
+            ))
+        return ret
 
-    def parse_detail_page(response):
-        """parse_detail_page(response) get information from response.text
-        """
+    def get_movie_detail(self, url : str) -> str:
+        response = self.fetch_page(url)
         parser = etree.HTMLParser(encoding='utf-8')
         tree = etree.HTML(response.text, parser=parser)
         info_path = './/div[@class="subject clearfix"]/div[2]'
@@ -109,6 +120,22 @@ def build_tool(config) -> Tool:
         Synopsis = tree.xpath('.//div[@class="related-info"]/div/span')[0].text.strip()
         detail = f'是一部{region}的{types}电影，由{director}导演，{actors}等人主演.\n剧情简介：{Synopsis}'
         return detail
+
+def build_tool(config) -> Tool:
+    tool = Tool(
+        "Film Search Plugin",
+        "search for up-to-date film information.",
+        name_for_model="Film Search",
+        description_for_model="Plugin for search for up-to-date film information.",
+        logo_url="https://your-app-url.com/.well-known/logo.png",
+        contact_email="hello@contact.com",
+        legal_info_url="hello@legal.com"
+    )
+    
+    if "debug" in config and config["debug"]:
+        douban_api = config["douban_api"]
+    else:
+        douban_api = DoubanAPI()
 
     @tool.get("/coming_out_filter")
     def coming_out_filter(args : str):
@@ -138,20 +165,37 @@ def build_tool(config) -> Tool:
         outNum = int(args[2])
         WantSort = True if args[3]=='True' else False
 
-        df = parse_coming_page()
-        df_recon = pd.DataFrame.copy(df, deep=True)
-        
-        # 即将上映的某类型电影，根据想看人数、地区、类型进行筛选
-        df_recon['wantWatchPeopleNum'] = df_recon['wantWatchPeopleNum'].apply(lambda x: int(x.replace('人', '')))
-        
-        df_recon = df_recon[df_recon['cate'].str.contains(cate)]
-        df_recon = df_recon[df_recon['region'].str.contains(region)]
+        coming_movies = []
+        for movie in douban_api.get_coming():
+            if (cate in movie["cate"]) and (region in movie["region"]):
+                coming_movies.append({
+                    "date": movie["date"],
+                    "title": movie["title"],
+                    "cate": movie["cate"],
+                    "region": movie["region"],
+                    "wantWatchPeopleNum": int(movie["wantWatchPeopleNum"].replace("人", "")),
+                    "link": movie["link"]
+                })
         
         # 最后根据想看人数降序排列 
         if WantSort:
-            df_recon.sort_values(by="wantWatchPeopleNum" , inplace=True, ascending = not WantSort) 
-        outDf = df_recon[:outNum]
-        return df.loc[outDf.index, 'date':'wantWatchPeopleNum']
+            coming_movies = sorted(coming_movies, key=lambda x: x["wantWatchPeopleNum"], reverse=True)
+        
+        ret = {
+            "date": {},
+            "title": {},
+            "cate": {},
+            "region": {},
+            "wantWatchPeopleNum": {},
+        }
+        for i, movie in enumerate(coming_movies[:outNum]):
+            i = str(i)
+            ret["date"][i] = movie["date"]
+            ret["title"][i] = movie["title"]
+            ret["cate"][i] = movie["cate"]
+            ret["region"][i] = movie["region"]
+            ret["wantWatchPeopleNum"][i] = "{}人".format(movie["wantWatchPeopleNum"])
+        return ret
 
 
     @tool.get("/now_playing_out_filter")
@@ -180,20 +224,37 @@ def build_tool(config) -> Tool:
         outNum = int(args[1])
         scoreSort = True if args[2]=='True' else False
 
-        df = parse_nowplaying_page()
+        playing_movies = []
+        for movie in douban_api.get_now_playing():
+            if region in movie["region"]:
+                playing_movies.append({
+                    "title": movie["title"],
+                    "score": float(movie["score"]),
+                    "region": movie["region"],
+                    "director": movie["director"],
+                    "actors": movie["actors"],
+                    "link": movie["link"]
+                })
         
-        df_recon = pd.DataFrame.copy(df, deep=True)
-        
-        df_recon['score'] = df_recon['score'].apply(lambda x: float(x))
-
-        # 正在上映的某类型电影，根据地区进行筛选
-        df_recon = df_recon[df_recon['region'].str.contains(region)]
-        
-        # 最后根据评分降序排列 
+        # 根据评分降序排列 
         if scoreSort:
-            df_recon.sort_values(by="score" , inplace=True, ascending = not scoreSort) 
-        outDf = df_recon[:outNum]
-        return df.loc[outDf.index, 'title':'actors']
+            playing_movies = sorted(playing_movies, key=lambda x: x["score"], reverse=True)
+        
+        ret = {
+            "title": {},
+            "score": {},
+            "region": {},
+            "director": {},
+            "actors": {},
+        }
+        for i, movie in enumerate(playing_movies[:outNum]):
+            i = str(i)
+            ret["title"][i] = movie["title"]
+            ret["score"][i] = "{}".format(movie["score"])
+            ret["region"][i] = movie["region"]
+            ret["director"][i] = movie["director"]
+            ret["actors"][i] = movie["actors"]
+        return ret
 
     @tool.get("/print_detail")
     def print_detail(args : str):
@@ -217,18 +278,22 @@ def build_tool(config) -> Tool:
         args = re.findall(r'\b\w+\b', args)
         filmName = args[0]
 
-        df_coming = parse_coming_page()
-        df_nowplaying = parse_nowplaying_page()
+        link = None
         
-        if filmName in list(df_coming['title']):
-            df = df_coming
-            url = df[df['title']==filmName]['link'].values[0]
-            response = fetch_page(url)
-            detail = parse_detail_page(response)
-        elif filmName in list(df_nowplaying['title']):
-            df = df_nowplaying
-            url = df[df['title']==filmName]['link'].values[0]
-            response = fetch_page(url)
-            detail = parse_detail_page(response)
-        return f'{filmName}{detail}'
+        if link is None:
+            for movie in douban_api.get_coming():
+                if movie["title"] == filmName:
+                    link = movie["link"]
+                    break
+        
+        if link is None:
+            for movie in douban_api.get_now_playing():
+                if movie["title"] == filmName:
+                    link = movie["link"]
+                    break
+                
+        if link is None:
+            return "没有找到该电影"
+        
+        return "{}{}".format(filmName, douban_api.get_movie_detail(link))
     return tool
