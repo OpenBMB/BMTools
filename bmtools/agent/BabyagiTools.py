@@ -1,5 +1,6 @@
 from collections import deque
 from typing import Dict, List, Optional, Any
+import re
 
 from langchain import LLMChain, OpenAI, PromptTemplate, SerpAPIWrapper
 from langchain.embeddings import OpenAIEmbeddings
@@ -16,23 +17,24 @@ from bmtools.agent.executor import Executor, AgentExecutorWithTranslation
 
 class ContextAwareAgent(ZeroShotAgent):
     def get_full_inputs(
-            self, intermediate_steps, **kwargs: Any
-        ) -> Dict[str, Any]:
-            """Create the full inputs for the LLMChain from intermediate steps."""
-            thoughts = self._construct_scratchpad(intermediate_steps)
-            new_inputs = {"agent_scratchpad": thoughts, "stop": self._stop}
-            full_inputs = {**kwargs, **new_inputs}
-            return full_inputs
+        self, intermediate_steps, **kwargs: Any
+    ) -> Dict[str, Any]:
+        """Create the full inputs for the LLMChain from intermediate steps."""
+        thoughts = self._construct_scratchpad(intermediate_steps)
+        new_inputs = {"agent_scratchpad": thoughts, "stop": self._stop}
+        full_inputs = {**kwargs, **new_inputs}
+        return full_inputs
     
-    def _construct_scratchpad(
-            self, intermediate_steps):
-            """Construct the scratchpad that lets the agent continue its thought process."""
-            thoughts = ""
-            # only modify the following line, [-2: ]
-            for action, observation in intermediate_steps[-2: ]:
-                thoughts += action.log
-                thoughts += f"\n{self.observation_prefix}{observation}\n{self.llm_prefix}"
-            return thoughts
+    def _construct_scratchpad(self, intermediate_steps):
+        """Construct the scratchpad that lets the agent continue its thought process."""
+        thoughts = ""
+        # only modify the following line, [-2: ]
+        for action, observation in intermediate_steps[-2: ]:
+            thoughts += action.log
+            thoughts += f"\n{self.observation_prefix}{observation}\n{self.llm_prefix}"
+            if "is not a valid tool, try another one" in observation:
+                thoughts += "You should select another tool rather than the invalid one.\n"
+        return thoughts
 
 class TaskCreationChain(LLMChain):
     """Chain to generates tasks."""
@@ -48,11 +50,29 @@ class TaskCreationChain(LLMChain):
             " These are incomplete tasks: {incomplete_tasks}."
             " Based on the result, create new tasks to be completed"
             " by the AI system that do not overlap with incomplete tasks."
-            " Return the tasks as an array."
+            " For a simple objective, do not generate complex todo lists."
+            " Do not generate repetitive tasks (e.g., tasks that have already been completed)."
+            " If there is not futher task needed to complete the objective, return NO TASK."
+            " Now return the tasks as an array."
         )
         prompt = PromptTemplate(
             template=task_creation_template,
             input_variables=["result", "task_description", "incomplete_tasks", "objective"],
+        )
+        return cls(prompt=prompt, llm=llm, verbose=verbose)
+    
+class InitialTaskCreationChain(LLMChain):
+    """Chain to generates tasks."""
+
+    @classmethod
+    def from_llm(cls, llm: BaseLLM, verbose: bool = True) -> LLMChain:
+        """Get the response parser."""
+        task_creation_template = (
+            "You are a planner who is an expert at coming up with a todo list for a given objective. For a simple objective, do not generate a complex todo list. Generate the first (only one) task needed to do for this objective: {objective}"
+        )
+        prompt = PromptTemplate(
+            template=task_creation_template,
+            input_variables=["objective"],
         )
         return cls(prompt=prompt, llm=llm, verbose=verbose)
     
@@ -66,10 +86,11 @@ class TaskPrioritizationChain(LLMChain):
             "You are an task prioritization AI tasked with cleaning the formatting of and reprioritizing"
             " the following tasks: {task_names}."
             " Consider the ultimate objective of your team: {objective}."
+            " Do not make up any tasks, just reorganize the existing tasks."
             " Do not remove any tasks. Return the result as a numbered list, like:"
             " #. First task"
             " #. Second task"
-            " Start the task list with number {next_task_id}."
+            " Start the task list with number {next_task_id}. (e.g., 2. ***, 3. ***, etc.)"
         )
         prompt = PromptTemplate(
             template=task_prioritization_template,
@@ -81,7 +102,11 @@ def get_next_task(task_creation_chain: LLMChain, result: Dict, task_description:
     """Get the next task."""
     incomplete_tasks = ", ".join(task_list)
     response = task_creation_chain.run(result=result, task_description=task_description, incomplete_tasks=incomplete_tasks, objective=objective)
-    new_tasks = response.split('\n')
+    # change the split method to re matching
+    # new_tasks = response.split('\n')
+    task_pattern = re.compile(r'\d+\. (.+?)\n')
+    new_tasks = task_pattern.findall(response)
+
     return [{"task_name": task_name} for task_name in new_tasks if task_name.strip()]
 
 def prioritize_tasks(task_prioritization_chain: LLMChain, this_task_id: int, task_list: List[Dict], objective: str) -> List[Dict]:
@@ -120,6 +145,7 @@ class BabyAGI(Chain, BaseModel):
     task_list: deque = Field(default_factory=deque)
     task_creation_chain: TaskCreationChain = Field(...)
     task_prioritization_chain: TaskPrioritizationChain = Field(...)
+    initial_task_creation_chain: InitialTaskCreationChain = Field(...)
     execution_chain: AgentExecutor = Field(...)
     task_id_counter: int = Field(1)
     vectorstore: VectorStore = Field(init=False)
@@ -155,8 +181,10 @@ class BabyAGI(Chain, BaseModel):
 
     def _call(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Run the agent."""
+        # not an elegant implementation, but it works for the first task
         objective = inputs['objective']
-        first_task = inputs.get("first_task", f"Make a todo list about this objective: {objective}")
+        first_task = inputs.get("first_task", self.initial_task_creation_chain.run(objective=objective))# self.task_creation_chain.llm(initial_task_prompt))
+
         self.add_task({"task_id": 1, "task_name": first_task})
         num_iters = 0
         while True:
@@ -190,6 +218,11 @@ class BabyAGI(Chain, BaseModel):
                     self.task_id_counter += 1
                     new_task.update({"task_id": self.task_id_counter})
                     self.add_task(new_task)
+
+                if len(self.task_list) == 0:
+                    print("\033[91m\033[1m" + "\n*****NO TASK, ABORTING*****\n" + "\033[0m\033[0m")
+                    break
+
                 self.task_list = deque(
                     prioritize_tasks(
                         self.task_prioritization_chain, this_task_id, list(self.task_list), objective
@@ -219,13 +252,16 @@ class BabyAGI(Chain, BaseModel):
         task_creation_chain = TaskCreationChain.from_llm(
             llm, verbose=verbose
         )
+        initial_task_creation_chain = InitialTaskCreationChain.from_llm(
+            llm, verbose=verbose
+        )
         task_prioritization_chain = TaskPrioritizationChain.from_llm(
             llm, verbose=verbose
         )
         llm_chain = LLMChain(llm=llm, prompt=prompt)
         tool_names = [tool.name for tool in tools]
         agent = ContextAwareAgent(llm_chain=llm_chain, allowed_tools=tool_names)
-        
+
         if stream_output:
             agent_executor = Executor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
         else:
@@ -234,13 +270,14 @@ class BabyAGI(Chain, BaseModel):
         return cls(
             task_creation_chain=task_creation_chain,
             task_prioritization_chain=task_prioritization_chain,
+            initial_task_creation_chain=initial_task_creation_chain,
             execution_chain=agent_executor,
             vectorstore=vectorstore,
             **kwargs
         )
     
 if __name__ == "__main__":
-    todo_prompt = PromptTemplate.from_template("You are a planner who is an expert at coming up with a todo list for a given objective. Come up with a todo list for this objective: {objective}")
+    todo_prompt = PromptTemplate.from_template("You are a planner who is an expert at coming up with a todo list for a given objective. For a simple objective, do not generate a complex todo list. Come up with a todo list for this objective: {objective}")
     todo_chain = LLMChain(llm=OpenAI(temperature=0), prompt=todo_prompt)
     search = SerpAPIWrapper()
     tools = [

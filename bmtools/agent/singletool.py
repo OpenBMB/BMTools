@@ -119,34 +119,21 @@ class STQuestionAnswerer:
             # customllm = CustomLLM()
             tool_str = "; ".join([t.name for t in self.all_tools_map[name]] + ["TODO"])
             prefix = """You are an AI who performs one task based on the following objective: {objective}. Take into account these previously completed tasks: {context}.\n You have access to the following APIs:"""
-            suffix = """YOUR CONSTRAINTS: (1) When saying anything, YOU MUST follow this format:
-            \nThought:\nAction:\nAction Input: \n or \nThought:\nFinal Answer:\n (2) Do not make up anything, and if your Observation has no link, DO NOT hallucihate one. (3) The Action must be one of the following: """ + tool_str + """\nQuestion: {task}\n Agent scratchpad (history actions): {agent_scratchpad}."""
+            suffix = """YOUR CONSTRAINTS: (1) YOU MUST follow this format:
+            \nThought:\nAction:\nAction Input: \n or \nThought:\nFinal Answer:\n (2) Do not make up anything, and if your Observation has no link, DO NOT hallucihate one. (3) The Action: MUST be one of the following: """ + tool_str + """\nQuestion: {task}\n Agent scratchpad (history actions): {agent_scratchpad}."""
 
-            todo_prompt = PromptTemplate.from_template("You are a planner who is an expert at coming up with a todo list for a given objective. Come up with a todo list for this objective: {objective}")
-            todo_chain = LLMChain(llm=self.llm, prompt=todo_prompt)
+            # tool_str = "; ".join([t.name for t in self.all_tools_map[name]])
+            # todo_prompt = PromptTemplate.from_template("You are a planner who is an expert at coming up with a todo list for a given objective. For a simple objective, do not generate a complex todo list. Generate a todo list that can largely be completed by the following APIs: " + tool_str + ". Come up with a todo list for this objective: {objective}")
+
+            # # todo_chain = LLMChain(llm=self.llm, prompt=todo_prompt)
             # todo_chain = LLMChain(llm=customllm, prompt=todo_prompt)
 
-            # search = SerpAPIWrapper()
-            # tools = [
-            #     Tool(
-            #         name="Search",
-            #         func=search.run,
-            #         description="useful for when you need to answer questions about current events",
-            #     ),
-            #     Tool(
-            #         name="TODO",
-            #         func=todo_chain.run,
-            #         description="useful for when you need to come up with todo lists. Input: an objective to create a todo list for. Output: a todo list for that objective. Please be very clear what the objective is!",
-            #     ),
-            # ]
-            # self.all_tools_map[name] = tools
-
-            todo_tool = Tool(
-                name = "TODO",
-                func=todo_chain.run,
-                description="useful for when you need to come up with todo lists. Input: an objective to create a todo list for. Output: a todo list for that objective. Please be very clear what the objective is!"
-            )
-            self.all_tools_map[name].append(todo_tool)
+            # todo_tool = Tool(
+            #     name = "TODO",
+            #     func=todo_chain.run,
+            #     description="useful for when you need to come up with todo lists. Input: an objective to create a todo list for. Output: a todo list for that objective. Please be very clear what the objective is!"
+            # )
+            # self.all_tools_map[name].append(todo_tool)
 
             prompt = ZeroShotAgent.create_prompt(
                 self.all_tools_map[name], 

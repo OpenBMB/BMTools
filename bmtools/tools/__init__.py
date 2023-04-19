@@ -8,6 +8,7 @@ from . import wolframalpha
 from . import office
 from . import bing_search
 from . import translation
+from . import tutorial
 
 from .tool import Tool
 from .registry import register
