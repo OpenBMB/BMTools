@@ -165,3 +165,17 @@ def register_python_tool():
 
 一个简单的例子是 [Wolfram Alpha API](https://github.com/OpenBMB/BMTools/tree/main/bmtools/tools/wolframalpha)，其可作为工具提示优化的参考。
 
+## 引用
+
+如果您在您的工作中使用了BMTools,请参考下面引用：
+
+```bibtex
+@misc{qin2023tool,
+      title={Tool Learning with Foundation Models}, 
+      author={Yujia Qin and Shengding Hu and Yankai Lin and Weize Chen and Ning Ding and Ganqu Cui and Zheni Zeng and Yufei Huang and Chaojun Xiao and Chi Han and Yi Ren Fung and Yusheng Su and Huadong Wang and Cheng Qian and Runchu Tian and Kunlun Zhu and Shihao Liang and Xingyu Shen and Bokai Xu and Zhen Zhang and Yining Ye and Bowen Li and Ziwei Tang and Jing Yi and Yuzhang Zhu and Zhenning Dai and Lan Yan and Xin Cong and Yaxi Lu and Weilin Zhao and Yuxiang Huang and Junxi Yan and Xu Han and Xian Sun and Dahai Li and Jason Phang and Cheng Yang and Tongshuang Wu and Heng Ji and Zhiyuan Liu and Maosong Sun},
+      year={2023},
+      eprint={2304.08354},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
+```
