@@ -53,7 +53,7 @@ def build_tool(config) -> Tool:
         return text_output
             
     @tool.get("/forecast_weather")
-    def forecast_weather(input_str):
+    def forecast_weather(input_str : str):
         '''Forecast weather in the upcoming days. Args: - location: str - days: int
         '''
         location = json.loads(input_str)["location"]
