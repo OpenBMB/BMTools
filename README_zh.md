@@ -1,10 +1,8 @@
-<div align="center">
+<div style="text-align: center;">
+    <h1><img src="docs/logo.png" height="28px" /> BMTools</h1>
+</div>
 
-<h1><img src="docs/logo.png" height="28px" /> BMTools</h1>
-
-# BMTools
-
-*Read this in [English](README_en.md).*
+*Read this in [English](README.md).*
 
 BMTools 是一能让语言模型使用扩展工具的开源仓库，其也是开源社区构建和共享工具的一个平台。在这个仓库中，您可以 (1) 通过编写 Python 函数轻松构建插件，(2) 使用外部的 ChatGPT-Plugins。
 
