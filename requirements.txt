@@ -8,3 +8,5 @@ openai
 gradio
 py3langid
 transformers
+torch
+sentencepiece
