@@ -10,11 +10,14 @@ BMTools 是一能让语言模型使用扩展工具的开源仓库，其也是开
 
 当前版本的 BMTools 还有很大的改进空间，我们将继续努力提高它的性能。
 
-## 最新支持
-- 2023/4/14 已经支持 [BabyAGI](https://github.com/yoheinakajima/babyagi).
-
 - **一个使用BMTools来操纵已有工具的范例.**
 ![A demo of BMTools](docs/meta0423.gif)
+
+## 最新支持
+
+- 2023/4/14 已经支持 [Auto-GPT](https://github.com/Significant-Gravitas/Auto-GPT).
+
+- 2023/4/14 已经支持 [BabyAGI](https://github.com/yoheinakajima/babyagi).
 
 ## 1. 安装
 

@@ -88,7 +88,6 @@ class STQuestionAnswerer:
     def load_tools(self, name, meta_info, prompt_type="react-with-tool-description", return_intermediate_steps=True):
 
         self.all_tools_map = {}
-        
         self.all_tools_map[name] = import_all_apis(meta_info)
 
         logger.info("Tool [{}] has the following apis: {}".format(name, self.all_tools_map[name]))
@@ -117,23 +116,10 @@ class STQuestionAnswerer:
             return agent_executor
         elif prompt_type == "babyagi":
             # customllm = CustomLLM()
-            tool_str = "; ".join([t.name for t in self.all_tools_map[name]] + ["TODO"])
+            tool_str = "; ".join([t.name for t in self.all_tools_map[name]])
             prefix = """You are an AI who performs one task based on the following objective: {objective}. Take into account these previously completed tasks: {context}.\n You have access to the following APIs:"""
             suffix = """YOUR CONSTRAINTS: (1) YOU MUST follow this format:
             \nThought:\nAction:\nAction Input: \n or \nThought:\nFinal Answer:\n (2) Do not make up anything, and if your Observation has no link, DO NOT hallucihate one. (3) The Action: MUST be one of the following: """ + tool_str + """\nQuestion: {task}\n Agent scratchpad (history actions): {agent_scratchpad}."""
-
-            # tool_str = "; ".join([t.name for t in self.all_tools_map[name]])
-            # todo_prompt = PromptTemplate.from_template("You are a planner who is an expert at coming up with a todo list for a given objective. For a simple objective, do not generate a complex todo list. Generate a todo list that can largely be completed by the following APIs: " + tool_str + ". Come up with a todo list for this objective: {objective}")
-
-            # # todo_chain = LLMChain(llm=self.llm, prompt=todo_prompt)
-            # todo_chain = LLMChain(llm=customllm, prompt=todo_prompt)
-
-            # todo_tool = Tool(
-            #     name = "TODO",
-            #     func=todo_chain.run,
-            #     description="useful for when you need to come up with todo lists. Input: an objective to create a todo list for. Output: a todo list for that objective. Please be very clear what the objective is!"
-            # )
-            # self.all_tools_map[name].append(todo_tool)
 
             prompt = ZeroShotAgent.create_prompt(
                 self.all_tools_map[name], 
@@ -143,7 +129,6 @@ class STQuestionAnswerer:
             )
 
             logger.info("Full prompt template: {}".format(prompt.template))
-
             # specify the maximum number of iterations you want babyAGI to perform
             max_iterations = 10
             baby_agi = BabyAGI.from_llm(
@@ -158,7 +143,78 @@ class STQuestionAnswerer:
             )
 
             return baby_agi
+        elif prompt_type == "autogpt":
+            from langchain.vectorstores import FAISS
+            from langchain.docstore import InMemoryDocstore
+            from langchain.embeddings import OpenAIEmbeddings
+            from langchain.tools.file_management.write import WriteFileTool
+            from langchain.tools.file_management.read import ReadFileTool
 
+            # Define your embedding model
+            embeddings_model = OpenAIEmbeddings()
+            # Initialize the vectorstore as empty
+            import faiss
+
+            embedding_size = 1536
+            index = faiss.IndexFlatL2(embedding_size)
+            vectorstore = FAISS(embeddings_model.embed_query, index, InMemoryDocstore({}), {})
+
+            from .autogpt.agent import AutoGPT
+            from langchain.chat_models import ChatOpenAI
+            from langchain.schema import (
+                AIMessage,
+                ChatGeneration,
+                ChatMessage,
+                ChatResult,
+                HumanMessage,
+                SystemMessage,
+            )
+
+            # customllm = CustomLLM()
+            # class MyChatOpenAI(ChatOpenAI):
+            #     def _create_chat_result(self, response):
+            #         generations = []
+            #         for res in response["choices"]:
+            #             message = self._convert_dict_to_message(res["message"])
+            #             gen = ChatGeneration(message=message)
+            #             generations.append(gen)
+            #         llm_output = {"token_usage": response["usage"], "model_name": self.model_name}
+            #         return ChatResult(generations=generations, llm_output=llm_output)
+                
+            #     def _generate(self, messages, stop):
+            #         message_dicts, params = self._create_message_dicts(messages, stop)
+            #         response = customllm(message_dicts)
+            #         response = json.loads(response)
+            #         print(response)
+            #         # response = self.completion_with_retry(messages=message_dicts, **params)
+            #         return self._create_chat_result(response)
+                
+            #     def _convert_dict_to_message(self, _dict: dict):
+            #         role = _dict["role"]
+            #         if role == "user":
+            #             return HumanMessage(content=_dict["content"])
+            #         elif role == "assistant":
+            #             return AIMessage(content=_dict["content"])
+            #         elif role == "system":
+            #             return SystemMessage(content=_dict["content"])
+            #         else:
+            #             return ChatMessage(content=_dict["content"], role=role)
+
+            # should integrate WriteFile and ReadFile into tools, will fix later.
+            # for tool in [WriteFileTool(), ReadFileTool()]:
+            #     self.all_tools_map[name].append(tool)
+
+            agent = AutoGPT.from_llm_and_tools(
+                ai_name="Tom",
+                ai_role="Assistant",
+                tools=self.all_tools_map[name],
+                llm=ChatOpenAI(temperature=0),
+                # llm=MyChatOpenAI(temperature=0),
+                memory=vectorstore.as_retriever()
+            )
+            # Set verbose to be true
+            agent.chain.verbose = True
+            return agent
 
 if __name__ == "__main__":
 

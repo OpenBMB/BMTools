@@ -64,11 +64,12 @@ class RequestTool(BaseTool):
         def func(json_args):
             if isinstance(json_args, str):
                 # json_args = json_args.replace("\'", "\"")
-                # print(json_args)
                 try:
                     json_args = json.loads(json_args)
                 except:
                     return "Your input can not be parsed as json, please use thought."
+                if "tool_input" in json_args:
+                    json_args = json_args["tool_input"]
             response = requests.get(url, json_args)
             if response.status_code == 200:
                 message = response.text
@@ -88,10 +89,11 @@ class RequestTool(BaseTool):
 
         description = f"- {tool_name}:\n" + \
              request_info[method].get('summary', '').replace("{", "{{").replace("}", "}}") \
-                + "," \
+                + ", " \
                 + request_info[method].get('description','').replace("{", "{{").replace("}", "}}") \
+                + ". " \
                 + str_doc \
-                + f"The Action to trigger this API should be {tool_name}\n and the input parameters should be a json dict string. Pay attention to the type of parameters.\n"
+                + f" The Action to trigger this API should be {tool_name} and the input parameters should be a json dict string. Pay attention to the type of parameters."
 
         logger.info("API Name: {}".format(tool_name))
         logger.info("API Description: {}".format(description))
