@@ -13,6 +13,9 @@ Current version of BMTools is far from perfect, we will continue to improve it.
 ## What's New
 - 2023/4/14 [BabyAGI](https://github.com/yoheinakajima/babyagi) is supported in BMTools.
 
+- **A demo of using BMTools to manipulate tools for meta analysis.**
+![A demo of BMTools](docs/meta0423.gif)
+
 ## 1. Setup
 
 ```bash
