@@ -65,7 +65,7 @@ def build_tool(config) -> Tool:
 
     @tool.get("/get_image")
     def get_image(keywords:str) -> str:
-        """get_image(keywords:str) -> str Get an image given comma seperated keywords, return the image path.
+        """get_image(keywords:str) -> str Get an image given comma separated keywords, return the image path.
         """
         picture_url = IMAGE_BED_PATTERN.format(keywords)
         response = requests.get(picture_url)
