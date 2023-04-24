@@ -10,3 +10,4 @@ py3langid
 transformers
 torch
 sentencepiece
+faiss-cpu
