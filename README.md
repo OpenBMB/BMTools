@@ -36,13 +36,12 @@ Add your api keys to secret_keys.sh, then start the local tools
 source secret_keys.sh
 python host_local_tools.py
 ```
-Then use set the url of plugin to `http://127.0.0.1:8079/tools/{tool_name}/` (Remember the tailing `/`).
+Then set the url of the plugin to `http://127.0.0.1:8079/tools/{tool_name}/` (Remember the tailing `/`).
 
 #### 2.1.2 Use online ChatGPT-Plugins
 
-Just loaded it with the URL pointed to the `.well-known/ai-plugin.json`
-For example, 
-Set the url to `https://www.klarna.com/`, where `https://www.klarna.com/.well-known/ai-plugin.json` is a valid configuration. 
+Just load it with the URL pointed to the `.well-known/ai-plugin.json`
+For example, set the url to `https://www.klarna.com/`, where `https://www.klarna.com/.well-known/ai-plugin.json` is a valid configuration. 
 
 ### 2.2 Use a single tool 
 
@@ -152,9 +151,9 @@ After you have developed a tool, you can contribute it to BMTools by following t
 7. Add a `readme.md` in your folder containing a brief introduction, contributor information, or anything you want to let others know. 
 
 ## 4. Optimize your tool's prompt
-The functions you wrote will be converted into an interface compatible with the OpenAI plugin. The AI models will read the name, description of the tools, and the name, descriptions of the APIs of that tools. You can adjust the following aspect to make your API better understood by AI models.
+The functions you wrote will be converted into an interface compatible with the OpenAI plugin. The AI models will read the name, description of the tools, as well as the name and descriptions of the tools' APIs. You can adjust the following aspect to make your API better understood by AI models.
 
-- (1) `name_for_model` (tells the model what the tool is) 
+- (1) `name_for_model` (tell the model what the tool is) 
 - (2) `description_for_model` (this will be displayed to the model before the tool is called, and you can include information on how to use the APIs) 
 - (3) The function name for each API function, as well as the name in `@tool.get()`. It's best if these two names match, as the name plays an important role in the model's API selection. 
 - (4) The function's doc string (can suggest to the model whether to use this API or not) 
