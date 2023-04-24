@@ -37,7 +37,7 @@ class RequestTool(BaseTool):
 
 
     def convert_prompt(self,params):
-        lines = "Your input should be a json: {{"
+        lines = "Your input should be a json (args json schema): {{"
         for p in params:
             logger.debug(p)
             optional = not p['required']
@@ -45,11 +45,10 @@ class RequestTool(BaseTool):
             if len(description) > 0:
                 description = "("+description+")"
 
-            lines +=  '"{name}" : {type}{desc},'.format(
-                                                                    name=p['name'],
-                                                                    type= p['schema']['type'], 
-                                                                    optional=optional,
-                                                                    desc=description)
+            lines +=  '"{name}" : {type}{desc}, '.format(name=p['name'],
+                type= p['schema']['type'], 
+                optional=optional,
+                desc=description)
 
         lines += "}}"
         return lines
@@ -87,10 +86,9 @@ class RequestTool(BaseTool):
             str_doc = ''
 
 
-        description = f"- {tool_name}:\n" + \
-             request_info[method].get('summary', '').replace("{", "{{").replace("}", "}}") \
-                + ", " \
-                + request_info[method].get('description','').replace("{", "{{").replace("}", "}}") \
+        # description = f"- {tool_name}:\n" + \
+        #      request_info[method].get('summary', '').replace("{", "{{").replace("}", "}}") \
+        description = request_info[method].get('description','').replace("{", "{{").replace("}", "}}") \
                 + ". " \
                 + str_doc \
                 + f" The Action to trigger this API should be {tool_name} and the input parameters should be a json dict string. Pay attention to the type of parameters."

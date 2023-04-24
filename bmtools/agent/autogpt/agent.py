@@ -106,8 +106,8 @@ class AutoGPT:
                 return action.args["response"]
             if action.name in tools:
                 tool = tools[action.name]
-                # newly added
                 try:
+                    # for tools in BMTools, the input should be string, while for default langchain toosl, the input is in json format, here we modify the following code
                     json_args = str(action.args).replace("\'", "\"")
                     observation = tool.run(json_args)
                 except ValidationError as e:

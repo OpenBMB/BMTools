@@ -24,7 +24,7 @@ def build_tool(config) -> Tool:
         
     @tool.get("/get_weather_today")
     def get_weather_today(location : str):
-        '''gets the weather
+        '''Get today's the weather
         '''
         param = {
             "key": KEY,
@@ -53,7 +53,7 @@ def build_tool(config) -> Tool:
             
     @tool.get("/forecast_weather")
     def forecast_weather(location : str, days : int):
-        '''Forecast weather in the upcoming days. Args: - location: str - days: int
+        '''Forecast weather in the upcoming days.
         '''
         param = {
             "key": KEY,

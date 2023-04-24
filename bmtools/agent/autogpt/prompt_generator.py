@@ -47,10 +47,10 @@ class PromptGenerator:
 
     def _generate_command_string(self, tool: BaseTool) -> str:
         output = f"{tool.name}: {tool.description}"
-        json_args = json.dumps(tool.args) if "tool_input" not in tool.args else tool.args[
-            "tool_input"
-        ]
-        output += f", args json schema: {json_args}"
+        # json_args = json.dumps(tool.args) if "tool_input" not in tool.args else tool.args[
+        #     "tool_input"
+        # ]
+        # output += f", args json schema: {json_args}"
         return output
 
     def add_resource(self, resource: str) -> None:
