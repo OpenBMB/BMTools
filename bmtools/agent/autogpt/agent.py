@@ -24,6 +24,7 @@ from langchain.schema import (
 from langchain.tools.base import BaseTool
 from langchain.tools.human.tool import HumanInputRun
 from langchain.vectorstores.base import VectorStoreRetriever
+import json
 
 
 class AutoGPT:
@@ -108,7 +109,7 @@ class AutoGPT:
                 tool = tools[action.name]
                 try:
                     # for tools in BMTools, the input should be string, while for default langchain toosl, the input is in json format, here we modify the following code
-                    json_args = str(action.args).replace("\'", "\"")
+                    json_args = json.dumps(action.args)
                     observation = tool.run(json_args)
                 except ValidationError as e:
                     observation = f"Error in args: {str(e)}"

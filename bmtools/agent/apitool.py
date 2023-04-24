@@ -62,7 +62,6 @@ class RequestTool(BaseTool):
     
         def func(json_args):
             if isinstance(json_args, str):
-                # json_args = json_args.replace("\'", "\"")
                 try:
                     json_args = json.loads(json_args)
                 except:
