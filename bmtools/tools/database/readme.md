@@ -1,4 +1,4 @@
-# Database Queries
+# Database Tool
 
 Contributor: [Xuanhe Zhou](https://github.com/zhouxh19)
 

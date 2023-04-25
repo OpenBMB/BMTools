@@ -7,7 +7,14 @@ print(tool_name, tool_config)
 stqa =  STQuestionAnswerer()
 
 agent = stqa.load_tools(tool_name, tool_config, prompt_type="react-with-tool-description")
-agent("""
+
+''' 
+# rewrite_sql
+agent("Rewrite the input query: select * from customer limit 2")
+'''
+
+# select_database_data
+agent(""" 
 Fetch the results from a postgresql database based on the following description: 
 
 \"Retrieve all the data from the 'customer' table and limit the output to only the first 2 rows.\"
