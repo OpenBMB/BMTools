@@ -1,10 +1,10 @@
-import requests
 import json
-from ..tool import Tool
 import os
-from database import DBArgs
-import utils.db_parser as db_parser
-from utils.database import DBArgs, Database
+
+from ..tool import Tool
+from bmtools.tools.database.database import DBArgs
+from bmtools.tools.database.utils.db_parser import get_conf
+from bmtools.tools.database.utils.database import DBArgs, Database
 
 def build_database_tool(config) -> Tool:
     tool = Tool(
@@ -19,32 +19,33 @@ def build_database_tool(config) -> Tool:
 
     #URL_CURRENT_WEATHER= "http://api.weatherapi.com/v1/current.json"
     #URL_FORECAST_WEATHER = "http://api.weatherapi.com/v1/forecast.json"
-        
+    
     @tool.get("/select_database_data")
-    def select_database_data(query : str='Retrieve the highest distinct l_orderkey value of lineitem, where there exists a maximum c_custkey of customers that matches the l_orderkey.'):
+    def select_database_data(query : str='select * from customer limit 2;'):
         '''Read the data storaged in database
         '''
 
-        # load db settings
-        parser = db_parser()
-        args = parser.parse_args()
-        dbargs = DBArgs("postgresql", db_parser.get_conf(args.db_conf, 'postgresql')) #todo assign database name
+        print("==========query:", query)
 
-        # db request
-        param = {
-            "settings": dbargs, # database
-            "q": query # sql
-        }
+        # load db settings
+        script_path = os.path.abspath(__file__)
+        script_dir = os.path.dirname(script_path)
+        config = get_conf(script_dir + '/my_config.ini', 'postgresql')
+        dbargs = DBArgs("postgresql", config=config)  # todo assign database name
 
         # send request to database
         db = Database(dbargs, timeout=-1)
 
-        res_completion = db.pgsql_results(query)
+        res_completion = db.pgsql_results(query) # list format
+
+
+        print("========res_completion:", res_completion)
+
         if res_completion == "<fail>":
             raise RuntimeError("Database query failed")
 
-        #res_completion = requests.get(URL_CURRENT_WEATHER, params=param)
-        data = json.loads(str(res_completion).strip())
+        #data = json.loads(str(res_completion).strip())
+        data = res_completion
 
         """ 
         # process the request result 
@@ -65,7 +66,7 @@ def build_database_tool(config) -> Tool:
         output["UV index"]= f"{data['current']['uv']},\n"         
         """
         
-        text_output = f"The query result is:\n"+"".join(res_completion)
+        text_output = f"The query result is:\n"+"".join(str(res_completion))
 
         return text_output
 

@@ -11,7 +11,7 @@ from . import map
 from . import translation
 from . import tutorial
 from . import file_operation
-
+from . import database
 
 from .tool import Tool
 from .registry import register

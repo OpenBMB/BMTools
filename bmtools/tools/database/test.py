@@ -1,11 +1,14 @@
 from bmtools.agent.singletool import load_single_tools, STQuestionAnswerer
 
+# Langchain
 tool_name, tool_url = 'database',  "http://127.0.0.1:8079/tools/database/"
-tools_name, tools_config = load_single_tools(tool_name, tool_url)
-print(tools_name, tools_config)
+tool_name, tool_config = load_single_tools(tool_name, tool_url)
+print(tool_name, tool_config)
+stqa =  STQuestionAnswerer()
 
-qa =  STQuestionAnswerer()
+agent = stqa.load_tools(tool_name, tool_config, prompt_type="react-with-tool-description")
+agent("""
+Fetch the results from a postgresql database based on the following description: 
 
-agent = qa.load_tools(tools_name, tools_config)
-
-agent("Retrieve the highest distinct l_orderkey value of lineitem, where there exists a maximum c_custkey of customers that matches the l_orderkey.")
+\"Retrieve all the data from the 'customer' table and limit the output to only the first 2 rows.\"
+""")

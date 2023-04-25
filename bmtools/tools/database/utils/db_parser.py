@@ -14,7 +14,7 @@ def get_parser():
         description="Instruction Induction.")
 
     parser.add_argument("--db_conf", type=str,
-                        default = '../query_rewrite/configs/config.ini')
+                        default = '../database/configs/config.ini')
     
     """ 
     parser.add_argument("--train_data", type=str,
