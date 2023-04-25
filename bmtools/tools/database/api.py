@@ -1,5 +1,6 @@
 import json
 import os
+import requests
 
 from ..tool import Tool
 from bmtools.tools.database.database import DBArgs
@@ -19,10 +20,12 @@ def build_database_tool(config) -> Tool:
 
     #URL_CURRENT_WEATHER= "http://api.weatherapi.com/v1/current.json"
     #URL_FORECAST_WEATHER = "http://api.weatherapi.com/v1/forecast.json"
+
+    URL_REWRITE= "http://8.131.229.55:5114/rewrite"
     
     @tool.get("/select_database_data")
-    def select_database_data(query : str='select * from customer limit 2;'):
-        '''Read the data storaged in database
+    def select_database_data(query : str='select * from customer limit 2;', schema : str=None):
+        '''Read the data stored in database
         '''
 
         print("==========query:", query)
@@ -69,5 +72,23 @@ def build_database_tool(config) -> Tool:
         text_output = f"The query result is:\n"+"".join(str(res_completion))
 
         return text_output
+
+    @tool.get("/rewrite_sql")
+    def rewrite_sql(sql: str="select distinct l_orderkey, sum(l_extendedprice + 3 + (1 - l_discount)) as revenue, o_orderkey, o_shippriority from customer, orders, lineitem where c_mktsegment = 'BUILDING' and c_custkey = o_custkey and l_orderkey = o_orderkey and o_orderdate < date '1995-03-15' and l_shipdate > date '1995-03-15' group by l_orderkey, o_orderkey, o_shippriority order by revenue desc, o_orderkey;"):
+
+        '''Get rewritten sql from rewriter
+        '''
+        param = {
+            "sql": sql
+        }
+        print("Rewriter param:", param)
+        headers = {'Content-Type': 'application/json'}
+        res_completion = requests.post(URL_REWRITE, data=json.dumps(param), headers=headers)
+        print("============ res_completion", res_completion.text)
+        data = json.loads(res_completion.text.strip())
+        data = data.get('data')
+        text_output = f"Rewritten sql is:\n"+data.get('rewritten_sql')
+        return text_output
+
 
     return tool

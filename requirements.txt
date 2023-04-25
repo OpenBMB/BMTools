@@ -11,3 +11,5 @@ transformers
 torch
 sentencepiece
 faiss-cpu
+psycopg2
+pymysql
