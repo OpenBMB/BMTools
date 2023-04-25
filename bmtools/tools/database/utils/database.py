@@ -2,6 +2,36 @@ import psycopg2
 import pymysql
 import json
 import logging
+import os
+from enum import IntEnum
+
+
+class DataType(IntEnum):
+    VALUE = 0
+    TIME = 1
+    CHAR = 2
+
+AGGREGATE_CONSTRAINTS = {
+    DataType.VALUE.value: ['count', 'max', 'min', 'avg', 'sum'],
+    DataType.VALUE.CHAR: ['count', 'max', 'min'],
+    DataType.VALUE.TIME: ['count', 'max', 'min']
+}
+
+def transfer_field_type(database_type, server):
+    data_type = list()
+    if server == 'mysql':
+        data_type = [['int', 'tinyint', 'smallint', 'mediumint', 'bigint', 'float', 'double', 'decimal'],
+                     ['date', 'time', 'year', 'datetime', 'timestamp']]
+        database_type = database_type.lower().split('(')[0]
+    elif server == 'postgresql':
+        data_type = [['integer', 'numeric'],
+                     ['date']]
+    if database_type in data_type[0]:
+        return DataType.VALUE.value
+    elif database_type in data_type[1]:
+        return DataType.TIME.value
+    else:
+        return DataType.CHAR.value
 
 class DBArgs(object):
 
@@ -26,11 +56,12 @@ class DBArgs(object):
 
 
 class Database():
-
     def __init__(self, args, timeout=-1):
         self.args = args
         self.conn = None
         self.resetConn(timeout)
+
+        # self.schema = self.compute_table_schema()
 
     def resetConn(self, timeout=-1):
         if self.args.dbtype == 'mysql':
@@ -59,33 +90,20 @@ class Database():
                                             host=self.args.host,
                                             port=self.args.port)
 
+    '''
     def exec_fetch(self, statement, one=True):
         cur = self.conn.cursor()
         cur.execute(statement)
         if one:
             return cur.fetchone()
-        return cur.fetchall()
-
-    def simulate_index(self, index):
-        #table_name = index.table()
-        statement = (
-            "SELECT * FROM hypopg_create_index(E'{}');".format(index)
-        )
-        result = self.execute_sql(statement)
-
-        return result
-
-    def drop_simulated_index(self, oid):
-        statement = f"select * from hypopg_drop_index({oid})"
-        result = self.execute_sql(statement)
-
-        assert result[0] is True, f"Could not drop simulated index with oid = {oid}."
+        return cur.fetchall()    
+    '''
 
     def execute_sql(self, sql):
         fail = 1
         cur = self.conn.cursor()
         i = 0
-        cnt = 3
+        cnt = 3 # retry times
         while fail == 1 and i < cnt:
             try:
                 fail = 0
@@ -98,11 +116,13 @@ class Database():
             i = i + 1
         logging.debug('database {}, return flag {}, execute sql {}\n'.format(self.args.dbname, 1 - fail, sql))
         if fail == 1:
-            # print("SQL Execution Fatal!!")
+            # raise RuntimeError("Database query failed")
+            print("SQL Execution Fatal!!")
             return 0, ''
         elif fail == 0:
             # print("SQL Execution Succeed!!")
             return 1, res
+
 
     def pgsql_cost_estimation(self, sql):
         try:
@@ -169,7 +189,6 @@ class Database():
 
         return total_cost
 
-
     def get_tables(self):
         if self.args.dbtype == 'mysql':
             return self.mysql_get_tables()
@@ -182,3 +201,66 @@ class Database():
             return self.mysql_cost_estimation(sql)
         else:
             return self.pgsql_cost_estimation(sql)
+
+    def compute_table_schema(self):
+        """
+        schema: {table_name: [field_name]}
+        :param cursor:
+        :return:
+        """
+
+        if self.args.dbtype == 'postgresql':
+            # cur_path = os.path.abspath('.')
+            # tpath = cur_path + '/sampled_data/'+dbname+'/schema'
+            sql = 'SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\';'
+            success, res = self.execute_sql(sql)
+            #print("======== tables", res)
+            if success == 1:                
+                tables = res
+                schema = {}
+                for table_info in tables:
+                    table_name = table_info[0]
+                    sql = 'SELECT column_name, data_type FROM information_schema.columns WHERE table_name = \'' + table_name + '\';'
+                    success, res = self.execute_sql(sql)
+                    #print("======== table columns", res)
+                    columns = res
+                    schema[table_name] = []
+                    for col in columns:
+
+                        ''' compute the distinct value ratio of the column
+                        
+                        if transfer_field_type(col[1], self.args.dbtype) == DataType.VALUE.value:
+                            sql = 'SELECT count({}) FROM {};'.format(col[0], table_name)
+                            success, res = self.execute_sql(sql)
+                            print("======== column rows", res)
+                            num = res
+                            if num[0][0] != 0:
+                                schema[table_name].append(col[0])
+                        '''
+
+                        schema[table_name].append("column {} is of {} type".format(col[0], col[1]))
+                '''
+                with open(tpath, 'w') as f:
+                    f.write(str(schema))
+                '''
+                #print(schema)
+                return schema
+
+            else:
+                logging.error('pgsql_cost_estimation Fails!')
+                return 0
+
+    def simulate_index(self, index):
+        #table_name = index.table()
+        statement = (
+            "SELECT * FROM hypopg_create_index(E'{}');".format(index)
+        )
+        result = self.execute_sql(statement)
+
+        return result
+
+    def drop_simulated_index(self, oid):
+        statement = f"select * from hypopg_drop_index({oid})"
+        result = self.execute_sql(statement)
+
+        assert result[0] is True, f"Could not drop simulated index with oid = {oid}."

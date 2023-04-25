@@ -4,9 +4,9 @@ Contributor: [Xuanhe Zhou](https://github.com/zhouxh19)
 
 ### API Functions
 
+- *get_database_schema*: obtain the information of target tables 
 - *select_database_data*: fetch the query results from a database instance
 - *rewrite_sql*: transform a sql query into an semantic-equivalent but execution-efficient sql
-
 
 ### Setup
 

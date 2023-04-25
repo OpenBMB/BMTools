@@ -13,9 +13,18 @@ agent = stqa.load_tools(tool_name, tool_config, prompt_type="react-with-tool-des
 agent("Rewrite the input query: select * from customer limit 2")
 '''
 
+'''
 # select_database_data
 agent(""" 
 Fetch the results from a postgresql database based on the following description: 
+
+\"Retrieve all the data from the 'customer' table and limit the output to only the first 2 rows.\"
+""")
+'''
+
+# get_database_schema
+agent(""" 
+Fetch the database schema from a postgresql database based on the following description: 
 
 \"Retrieve all the data from the 'customer' table and limit the output to only the first 2 rows.\"
 """)
