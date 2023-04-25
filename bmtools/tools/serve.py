@@ -79,7 +79,7 @@ class ToolServer:
         tool = build_tool(name, config)
         self.loaded_tools[name] = tool.api_info
         self.retriever.add_tool(name, tool.api_info)
-
+        
         # mount sub API server to the root API server, thus can mount all urls of sub API server to /tools/{name} route
         self.api.mount(f"/tools/{name}", tool, name)
         return
