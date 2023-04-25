@@ -4,6 +4,7 @@ import os
 server = bmtools.ToolServer()
 print(server.list_tools())
 server.load_tool("weather")
+server.load_tool("database")
 server.load_tool("chemical-prop")
 server.load_tool("douban-film")
 server.load_tool("wikipedia")
