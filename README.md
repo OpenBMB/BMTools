@@ -88,8 +88,6 @@ python web_demo.py
 ```
 
 
-
-
 ## 3. Use customized tools
 
 ### 3.1 Develop a tool locally
