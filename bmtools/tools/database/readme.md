@@ -8,6 +8,11 @@ Contributor: [Xuanhe Zhou](https://github.com/zhouxh19)
 - *select_database_data*: fetch the query results from a database instance
 - *rewrite_sql*: transform a sql query into an semantic-equivalent but execution-efficient sql
 
+### Dataset
+
+- *./data/tpch10x/text2res_multi_table.json*: relativley complex database queries (2-6 tables)
+- *./data/tpch10x/text2res_single_table.json*: basic database queries
+
 ### Setup
 
 1. Follow the steps in [main readme](https://github.com/OpenBMB/BMTools/blob/main/README.md)
@@ -27,4 +32,4 @@ Contributor: [Xuanhe Zhou](https://github.com/zhouxh19)
 
 Note. {db_system} must match with that in ./api.py
 
-4. Run the test.py script to test the tool
+4. Modify and run the test.py script to test the tool

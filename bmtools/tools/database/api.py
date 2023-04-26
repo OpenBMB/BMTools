@@ -3,7 +3,6 @@ import os
 import requests
 
 from ..tool import Tool
-from bmtools.tools.database.database import DBArgs
 from bmtools.tools.database.utils.db_parser import get_conf
 from bmtools.tools.database.utils.database import DBArgs, Database
 
@@ -33,9 +32,11 @@ def build_database_tool(config) -> Tool:
     db = Database(dbargs, timeout=-1)
 
     @tool.get("/get_database_schema")
-    def get_database_schema(): # query : str='select * from customer limit 2;'
-
+    #def get_database_schema(query : str='select * from customer limit 2;', db_name : str='tpch10x'):
+    def get_database_schema(db_name : str='tpch10x'):
+        
         #todo simplify the schema based on the query
+        print("=========== database name:", db_name)
         schema = db.compute_table_schema()
 
         print("========schema:", schema)
@@ -45,18 +46,21 @@ def build_database_tool(config) -> Tool:
         return text_output
 
     @tool.get("/select_database_data")
-    def select_database_data(query : str='select * from customer limit 2;', schema : str=None):
+    def select_database_data(query : str='select * from customer limit 2;'):
         '''Read the data stored in database
         '''
 
+        print("=========== database query:", query)
         res_completion = db.pgsql_results(query) # list format
 
         if res_completion == "<fail>":
             raise RuntimeError("Database query failed")
 
         #data = json.loads(str(res_completion).strip())
-
-        text_output = f"The query result is:\n"+"".join(str(res_completion))
+        if isinstance(res_completion, list):
+            text_output = f"The number of result rows is: "+"".join(str(len(res_completion)))
+        else:
+            text_output = f"The number of result rows is: "+"".join(str(res_completion))
 
         return text_output
 
@@ -72,7 +76,7 @@ def build_database_tool(config) -> Tool:
         headers = {'Content-Type': 'application/json'}
         res_completion = requests.post(URL_REWRITE, data=json.dumps(param), headers=headers)
 
-        print("============ res_completion", res_completion.text)
+        #print("============ res_completion", res_completion.text)
 
         data = json.loads(res_completion.text.strip())
         data = data.get('data')
