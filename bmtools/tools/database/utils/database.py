@@ -58,14 +58,13 @@ class DBArgs(object):
 class Database():
     def __init__(self, args, timeout=-1):
         self.args = args
-        self.conn = None
-        self.resetConn(timeout)
+        self.conn = self.resetConn(timeout)
 
         # self.schema = self.compute_table_schema()
 
     def resetConn(self, timeout=-1):
         if self.args.dbtype == 'mysql':
-            self.conn = pymysql.connect(
+            conn = pymysql.connect(
                 host=self.args.host,
                 user=self.args.user,
                 passwd=self.args.password,
@@ -77,19 +76,20 @@ class Database():
                 write_timeout=timeout)
         else:
             if timeout > 0:
-                self.conn = psycopg2.connect(database=self.args.dbname,
+                conn = psycopg2.connect(database=self.args.dbname,
                                             user=self.args.user,
                                             password=self.args.password,
                                             host=self.args.host,
                                             port=self.args.port,
                                             options='-c statement_timeout={}s'.format(timeout))
             else:
-                self.conn = psycopg2.connect(database=self.args.dbname,
+                conn = psycopg2.connect(database=self.args.dbname,
                                             user=self.args.user,
                                             password=self.args.password,
                                             host=self.args.host,
                                             port=self.args.port)
 
+        return conn
     '''
     def exec_fetch(self, statement, one=True):
         cur = self.conn.cursor()
@@ -101,6 +101,7 @@ class Database():
 
     def execute_sql(self, sql):
         fail = 1
+        self.conn = self.resetConn()
         cur = self.conn.cursor()
         i = 0
         cnt = 3 # retry times
@@ -122,6 +123,19 @@ class Database():
         elif fail == 0:
             # print("SQL Execution Succeed!!")
             return 1, res
+
+    def pgsql_results(self, sql):
+        try:
+            #success, res = self.execute_sql('explain (FORMAT JSON, analyze) ' + sql)
+            success, res = self.execute_sql(sql)
+            #print("pgsql_results", success, res)
+            if success == 1:
+                return res
+            else:
+                return "<fail>"
+        except Exception as error:
+            logging.error('pgsql_results Exception', error)
+            return "<fail>"
 
 
     def pgsql_cost_estimation(self, sql):
@@ -150,19 +164,6 @@ class Database():
         except Exception as error:
             logging.error('pgsql_actual_time Exception', error)
             return -1
-
-    def pgsql_results(self, sql):
-        try:
-            #success, res = self.execute_sql('explain (FORMAT JSON, analyze) ' + sql)
-            success, res = self.execute_sql(sql)
-            if success == 1:
-                return res
-            else:
-                return "<fail>"
-        except Exception as error:
-            logging.error('pgsql_results Exception', error)
-            return "<fail>"
-
 
     def mysql_cost_estimation(self, sql):
         try:
@@ -238,7 +239,8 @@ class Database():
                                 schema[table_name].append(col[0])
                         '''
 
-                        schema[table_name].append("column {} is of {} type".format(col[0], col[1]))
+                        #schema[table_name].append("column {} is of {} type".format(col[0], col[1]))
+                        schema[table_name].append("{}".format(col[0]))
                 '''
                 with open(tpath, 'w') as f:
                     f.write(str(schema))
