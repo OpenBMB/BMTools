@@ -57,7 +57,7 @@ def semantic_query(term, retmax=100):
         print('semantic searching fewer than 100!')
         retmax = 100
     for cnt in range(10):
-        url = 'https://api.semanticscholar.org/graph/v1/paper/search?query='+term.replace(' ', '+')+'&offset=10&limit='+str(retmax)+'&fields=title,authors,abstract'
+        url = 'https://api.semanticscholar.org/graph/v1/paper/search?query='+term.replace(' ', '+')+'&limit='+str(retmax)+'&fields=title,authors,abstract'
         re = requests.get(url)
         results = json.loads(re.text)
         docs = {}
@@ -83,10 +83,10 @@ def draw_term(topic):
     print(st)
     return st[:-1]
 
-def initial(topic, term=None):
+def initial(topic, term=None, ret=100):
     if term is None:
         term = draw_term(topic)
-    docs = semantic_query(term.replace(' ', '+')[:50], 100)
+    docs = semantic_query(term.replace(' ', '+')[:50], ret)
     sims = dense(topic, docs)
     return docs,sims
 
@@ -236,7 +236,7 @@ def convert(table0):
         if tmptag==0:
             tag = 0
             break
-    if tag and len(table)>2: 
+    if tag and len(table)>2:
         vals = table[2].strip('\n').strip(' ')[1:-1].split('|')
         if len(vals)!=len(segs):
             return {}
@@ -329,6 +329,8 @@ def final_table(pth, dicrec):
 def print_table(tab):
     allcon = ''
     kys = list(tab.keys())
+    if len(kys)==0:
+        return allcon
     lt = len(tab[kys[0]].strip(' | ').split('|'))
     header = ' | Elements | '
     splitter = ' | ----- | '
@@ -362,11 +364,13 @@ class GetIDResponse(BaseModel):
 
 
 def build_tool(config) -> Tool:
+    import pdb
+    pdb.set_trace()
     tool = Tool(
-        "Chemical Property Plugin",
-        description="looking up a chemical's property",
-        name_for_model="Chemical Property",
-        description_for_model="Plugin for looking up a chemical's property using a chemical knowledge base. All input should be a json like {'input': 'some input'}. Please use the provided questions and search step by step.",
+        "Meta Analysis Plugin",
+        description="Analyzing literatures",
+        name_for_model="Meta Analysis",
+        description_for_model="Plugin for searching and analyzing literatures. All input should be a json like {'input': 'some input'}. Please use the provided questions and search step by step.",
         logo_url="https://your-app-url.com/.well-known/logo.png",
         contact_email="hello@contact.com",
         legal_info_url="hello@legal.com",
@@ -375,7 +379,7 @@ def build_tool(config) -> Tool:
 
     @tool.get("/search_literature")
     def search_literature( topic: str, maxnum: int, term: str ):
-        """search for the given topic literatures in the database and return the path of literatures file. the searching term should be key words in the topic (2-5 words). the number of literatures will be less than maxnum (recommend 30) """
+        """search for the given topic literatures in the database and return the path of literatures file and the number of literatures. the searching term should be key words in the topic (2-5 words). the number of literatures will be less than maxnum (recommend 30) """
         topic = topic.replace('AND', '').replace('OR', '')
         if len(topic)<4:
             term = topic
@@ -384,16 +388,19 @@ def build_tool(config) -> Tool:
         if len(term.split(' '))>4:
             term = None
         retmax = min(maxnum,50)
-        docs, sims = initial(topic, term)
-        srts = np.argsort(-sims)
-        kys = list(docs.keys())
-        newdocs = {}
-        for sr in srts:
-            if sims[sr]<0.72 and len(newdocs)>0:
-                break
-            if len(newdocs)>=retmax:
-                break
-            newdocs[kys[sr]] = docs[kys[sr]]
+        if retmax==1:
+            newdocs, sims = initial(topic, term, 1)
+        else:
+            docs, sims = initial(topic, term)
+            srts = np.argsort(-sims)
+            kys = list(docs.keys())
+            newdocs = {}
+            for sr in srts:
+                if sims[sr]<0.72 and len(newdocs)>0:
+                    break
+                if len(newdocs)>=retmax:
+                    break
+                newdocs[kys[sr]] = docs[kys[sr]]
         pickle.dump(newdocs, open('searchdoc_'+topic.replace(' ', '_')[:50]+'.pkl', 'wb'))
         js = {}
         js['literature_path'] = 'searchdoc_'+topic.replace(' ', '_')[:50]+'.pkl'
@@ -402,7 +409,7 @@ def build_tool(config) -> Tool:
 
     @tool.get("/split_criteria")
     def split_criteria( criteria:str ):
-        """split the screening criteria of the literatures into a series of simple yes/no problems, and return the path of the splitted questions. """
+        """split the screening requirements in the criteria of the literatures into a series of simple yes/no problems, and return the path of the splitted questions. """
         ques = split_question(criteria)
         np.save('split_ques_'+criteria.replace(' ', '_')[:50]+'.npy', ques)
         js = {'question number': len(ques), 'question_path': 'split_ques_'+criteria.replace(' ', '_')[:50]+'.npy'}
