@@ -364,8 +364,6 @@ class GetIDResponse(BaseModel):
 
 
 def build_tool(config) -> Tool:
-    import pdb
-    pdb.set_trace()
     tool = Tool(
         "Meta Analysis Plugin",
         description="Analyzing literatures",
