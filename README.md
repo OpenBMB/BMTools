@@ -4,20 +4,24 @@
 
 *Read this in [Chinese](README_zh.md).*
 
+![bmtools](docs/overview.png)
+
 BMTools is an open-source repository that extends language models using tools and serves as a platform for the community to build and share tools. In this repository, you can (1) easily build a plugin by writing python functions (2) use external ChatGPT-Plugins. 
 
 This project is inspired by the open-source project [LangChain](https://github.com/hwchase17/langchain/) and optimized for the usage of open-sourced tools like [ChatGPT-Plugins](https://openai.com/blog/chatgpt-plugins), striving to achieve the open-source academic version of ChatGPT-Plugins.
-
-Current version of BMTools is far from perfect, we will continue to improve it. 
 
 - **A demo of using BMTools to manipulate tools for meta analysis.**
 ![A demo of BMTools](docs/meta0423.gif)
 
 ## What's New
 
-- 2023/4/24 [Auto-GPT](https://github.com/Significant-Gravitas/Auto-GPT) is supported in BMTools.
+- **[2023/4/24]** [Auto-GPT](https://github.com/Significant-Gravitas/Auto-GPT) is supported in BMTools.
 
-- 2023/4/14 [BabyAGI](https://github.com/yoheinakajima/babyagi) is supported in BMTools.
+- **[2023/4/14]** [BabyAGI](https://github.com/yoheinakajima/babyagi) is supported in BMTools.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=OpenBMB/BMTools&type=Date)](https://star-history.com/#OpenBMB/BMTools&Date)
 
 ## 1. Setup
 

@@ -4,14 +4,21 @@
 
 *Read this in [English](README.md).*
 
+![bmtools](docs/overview.png)
+
 BMTools 是一能让语言模型使用扩展工具的开源仓库，其也是开源社区构建和共享工具的一个平台。在这个仓库中，您可以 (1) 通过编写 Python 函数轻松构建插件，(2) 使用外部的 ChatGPT-Plugins。
 
 本项目受到开源项目[LangChain](https://github.com/hwchase17/langchain/)的启发，针对开源工具的使用（例如[ChatGPT-Plugins](https://openai.com/blog/chatgpt-plugins)）进行了优化，力图实现 ChatGPT-Plugins 的开源学术版本。
 
-当前版本的 BMTools 还有很大的改进空间，我们将继续努力提高它的性能。
-
 ## 最新支持
-- 2023/4/14 已经支持 [BabyAGI](https://github.com/yoheinakajima/babyagi).
+
+- **[2023/4/24]** 已经支持 [Auto-GPT](https://github.com/Significant-Gravitas/Auto-GPT).
+
+- **[2023/4/14]** 已经支持 [BabyAGI](https://github.com/yoheinakajima/babyagi).
+
+## 星标日志
+
+[![Star History Chart](https://api.star-history.com/svg?repos=OpenBMB/BMTools&type=Date)](https://star-history.com/#OpenBMB/BMTools&Date)
 
 ## 1. 安装
 
