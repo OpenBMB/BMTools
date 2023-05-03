@@ -66,7 +66,6 @@ Note. 1) Only obtain the database schema once;
 # \"Retrieve all the data from the 'customer' table and limit the output to only the first 2 rows.\"
 # """)
 
-
 ''' output (autogpt)
 > Entering new LLMChain chain...
 Prompt after formatting:
