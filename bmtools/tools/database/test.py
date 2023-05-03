@@ -7,27 +7,47 @@ stqa =  STQuestionAnswerer()
 
 agent = stqa.load_tools(tool_name, tool_config, prompt_type="autogpt") # langchain: react-with-tool-description
 
-# text = "Retrieve the comments of suppliers, size of parts, and supply cost of part-supplier combinations where the available quantity of the part is 6331, the type of the part is greater than 'LARGE POLISHED NICKEL', and the retail price of the part is less than 1758.76. The results should be sorted in descending order based on the comments of the suppliers."
+# 394
+text = "Retrieve the comments of suppliers, size of parts, and supply cost of part-supplier combinations where the available quantity of the part is 6331, the type of the part is greater than 'LARGE POLISHED NICKEL', and the retail price of the part is less than 1758.76. The results should be sorted in descending order based on the comments of the suppliers."
+# 1707
+# text = "Retrieve the tax rate and total price from the lineitem and orders tables where the line number is greater than or equal to 3, the order key is not equal to 784709, the order key is less than or equal to 189383, and the clerk's ID is less than 'Clerk#000000181'."
+# # 100967
+# text = "Retrieve the part type, available quantity of parts, and the sum of supplier keys from the part and partsupp tables where the supplier key is not equal to 3804, the part key is less than or equal to 57823, and the available quantity of parts is less than 4781. Group the results by part type and available quantity of parts, and only include groups where the sum of supplier keys is greater than 1089. Sort the results in ascending order based on the sum of supplier keys."
+# # 1249285 (fail to generate the sql)
+# text = "Retrieve the phone number of the customer, the total price of the order, the comment of the nation, and the comment of the region from the orders table, customer table, nation table, and region table, respectively, where the nation key is less than 8, the order status is greater than or equal to 'O', and the order comment is less than 'ly around the pending theodo'. Sort the result by customer phone number in ascending order, nation comment in ascending order, order total price in ascending order, and region comment in ascending order."
+# # 1272240
+# text = "Retrieve the account balance, supply cost, region key, and nation name from the region, nation, supplier, and partsupp tables where the region name is less than or equal to 'AFRICA', the nation comment is greater than or equal to 'l platelets. regular accounts x-ray: unusual, regular acco', and the supplier nation key is greater than or equal to 0."
+# # 150302
+# text = "Retrieve the order key and customer address from the customer and orders tables where the customer phone number is not '29-716-678-7355', the customer key is less than or equal to 16201, the order total price is greater than 29849.7, the order clerk is not 'Clerk#000000361', and the order ship priority is greater than or equal to 0. Sort the results by customer address in descending order."
+# 3376197
 # text = "Retrieve the shipment dates from the lineitem table where the extended price is greater than or equal to 50883.12, the linenumber is greater than 1, the shipdate is not equal to '1992-08-30', and the return flag is 'A', and sort the results in descending order based on the shipment date." # 7
+# 7
 # text = "Retrieve the account balance, order priority, and nation name for customers who have a comment of 'ar deposits believe special, express foxes. packages cajole slyly e', are not from Japan, have a market segment of 'HOUSEHOLD', have a total order price less than 110238.65, and have a name less than or equal to 'Customer#000013191'."   # 8
+# 974546
 # text = "Retrieve the part type and part supplier comment from the Part and Partsupp tables where the available quantity of the part supplier is not equal to 1078, the part type is less than 'PROMO BURNISHED NICKEL', the part size is greater than 8, and the part container is less than 'LG CAN'." # 9
+# 85446
 # text = "Retrieve the comments from the \"partsupp\" table where the available quantity is greater than or equal to 9324, the supplier key is not equal to 1716, the part key is greater than or equal to 65143, the supply cost is less than 164.19, and the comment is not equal to 's use slyly pending instructions. furiously final ideas shall have to are c'." # 10
+# 623025 (wrong results ~ directly call the database tool)
 # text = "Retrieve the supplier name, supplier key, and region key from the supplier, nation, and region tables where the region key is greater than or equal to 1, the supplier key is less than or equal to 9696, the region comment is not equal to 'uickly special accounts cajole carefully blithely close requests. carefully final asymptotes haggle furiousl', the supplier name is less than 'Supplier#000008309', and the supplier phone is not equal to '19-247-536-8083', and sort the results by supplier key in ascending order, region key in descending order, and region name in ascending order."  # 11
-text = "Retrieve the order priority from the \"orders\" table where the order priority is greater than '3-MEDIUM', the total price is greater than 130861.55, the comment is less than 'finally pending packages sleep along the furiously special', the customer key is less than or equal to 16480, the ship priority is less than or equal to 0, and the order date is not equal to '1997-02-20', and sort the results in ascending order based on the order priority." # 12
+# 14448 (wrong results)
+# text = "Retrieve the order priority from the \"orders\" table where the order priority is greater than '3-MEDIUM', the total price is greater than 130861.55, the comment is less than 'finally pending packages sleep along the furiously special', the customer key is less than or equal to 16480, the ship priority is less than or equal to 0, and the order date is not equal to '1997-02-20', and sort the results in ascending order based on the order priority." # 12
 
-agent.run([""" First get the database schema. Next generate the sql query exactly based on the schema and the following description:
+# rewrite
+#text = "SELECT s_comment FROM part As p,partsupp As ps,supplier As s WHERE p.p_partkey = ps.ps_partkey AND s.s_suppkey = ps.ps_suppkey AND ps.ps_availqty = 6331 AND p.p_type > 'LARGE POLISHED NICKEL' AND p.p_retailprice < 1758.76 ORDER BY s_comment DESC;"
+# text = "Retrieve the comments of suppliers. The results should be sorted in descending order based on the comments of the suppliers"
+text = "Retrieve the comments in the supplier table where the p\_partkey column in the part table matches the ps\_partkey column in the partsupp table, the ps\_availqty column in the partsupp table equals 6331, the p_type column in the part table is greater than 'LARGE POLISHED NICKEL', and the p\_retailprice column in the part table is less than 1758.76."
+
+agent.run([""" First get the database schema via get_database_schema. Next generate the sql query exactly based on the schema and the following description:
 \"{}\" 
 
-Note. The table and column names used in the sql must exactly appear in the schema. Any other table and column names are unacceptable.
+Next rewrite the SQL query and output the total number of rows in the database results of the rewritten SQL query.
 
-Finally, output the total number of rows in the query results over a postgresql database of the SQL query. And finish the task as soon as the the total number is outputted.
-
-Note. 1) Generate the sql query by your own and do not use any tool;
-2) Do not use any image in the output; 
-3) The db_name is tpch10x; 
-4) Count the rows of query results by your own and do not output the whole query results.
+Note. 1) Only obtain the database schema once;
+2) If an API is successfully called, do not call the same API again; 
+3) Do not use any image in the output; 
+4) The db_name is tpch10x; 
+5) Count the rows of query results by your own and do not output the whole query results.
 """.format(text)])
-
 
 # # unit test: get_database_schema
 # agent.run([""" 
@@ -125,8 +145,5 @@ Human: Determine which next command to use, and respond using the format specifi
         }
     }
 }
-
-
-
 
 '''
