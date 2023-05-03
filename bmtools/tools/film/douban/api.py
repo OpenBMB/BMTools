@@ -66,7 +66,7 @@ class DoubanAPI:
         return ret
     
     def get_now_playing(self) -> List[PlayingMovieInfo]:
-        # 获取正在上映的电影列表，不同城市的电影列表是一样的
+        # Get the movie list currently on show, the movie list of different cities is the same
         response = self.fetch_page(f"{self._endpoint}/cinema/nowplaying/beijing/")
         ret : List[PlayingMovieInfo] = []
 
@@ -177,7 +177,7 @@ def build_tool(config) -> Tool:
                     "link": movie["link"]
                 })
         
-        # 最后根据想看人数降序排列 
+        # Sort by people that are looking forward to the movie
         if WantSort:
             coming_movies = sorted(coming_movies, key=lambda x: x["wantWatchPeopleNum"], reverse=True)
         
@@ -236,7 +236,7 @@ def build_tool(config) -> Tool:
                     "link": movie["link"]
                 })
         
-        # 根据评分降序排列 
+        # Sort by score
         if scoreSort:
             playing_movies = sorted(playing_movies, key=lambda x: x["score"], reverse=True)
         

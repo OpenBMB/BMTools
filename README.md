@@ -1,23 +1,52 @@
-<div style="text-align: center;">
+
+<div align= "center">
     <h1><img src="docs/logo.png" height="28px" /> BMTools</h1>
 </div>
 
+
+
+<p align="center">
+  <a href="#whats-new">News</a> •
+  <a href="#1-setup">Setup</a> •
+  <a href="#2-use-existing-tools">How To Use</a> •
+  <a href="https://thunlp.github.io/OpenPrompt/">Docs</a> •
+  <a href="https://arxiv.org/abs/2304.08354">Paper</a> •
+  <a href="#citation">Citation</a> •
+</p>
+
+
+
 *Read this in [Chinese](README_zh.md).*
+
+
+<br>
+
+<div align="center">
+<img src="docs/overview.png" width="700px">
+</div>
+<br>
 
 BMTools is an open-source repository that extends language models using tools and serves as a platform for the community to build and share tools. In this repository, you can (1) easily build a plugin by writing python functions (2) use external ChatGPT-Plugins. 
 
+
 This project is inspired by the open-source project [LangChain](https://github.com/hwchase17/langchain/) and optimized for the usage of open-sourced tools like [ChatGPT-Plugins](https://openai.com/blog/chatgpt-plugins), striving to achieve the open-source academic version of ChatGPT-Plugins.
 
-Current version of BMTools is far from perfect, we will continue to improve it. 
-
 - **A demo of using BMTools to manipulate tools for meta analysis.**
-![A demo of BMTools](docs/meta0423.gif)
+
+
+<div align="center">
+
+<img src="docs/meta0423.gif" width="700px">
+
+</div>
+
 
 ## What's New
 
-- 2023/4/24 [Auto-GPT](https://github.com/Significant-Gravitas/Auto-GPT) is supported in BMTools.
+- **[2023/4/24]** [Auto-GPT](https://github.com/Significant-Gravitas/Auto-GPT) is supported in BMTools.
 
-- 2023/4/14 [BabyAGI](https://github.com/yoheinakajima/babyagi) is supported in BMTools.
+- **[2023/4/14]** [BabyAGI](https://github.com/yoheinakajima/babyagi) is supported in BMTools.
+
 
 ## 1. Setup
 
@@ -174,3 +203,15 @@ If you use BMTools in your research, please cite:
       primaryClass={cs.CL}
 }
 ```
+
+
+
+## Star History
+
+<br>
+<div align="center">
+
+<img src="https://api.star-history.com/svg?repos=OpenBMB/BMTools&type=Date" width="600px">
+
+</div>
+<br>

@@ -61,7 +61,10 @@ def build_tool(config) -> Tool:
 
         for ret in rets:
             ret = filter_dict(ret, blacklist=blacklist)
-            cleaned_rets.append(ret)
+            # Do further cleaning to retain only the input and result pods
+            if "@title" in ret:
+                if ret["@title"] == "Input" or ret["@title"] == "Result":
+                    cleaned_rets.append(ret)
 
         return cleaned_rets
     
