@@ -1,6 +1,7 @@
 
 import requests
 import json
+from datetime import date, datetime, timedelta
 import os
 from ..tool import Tool
 
@@ -31,9 +32,16 @@ def build_tool(config) -> Tool:
     def get_today_date():
         '''Get today's date
         '''
-        from datetime import date
         today = date.today()
         return today.strftime("%Y-%m-%d")
+
+    @tool.get('/add_date')
+    def add_date(date : str, days : int):
+        '''Add days to a date. Date should be pass as 'yyyy-mm-dd'.
+        '''
+        date = datetime.strptime(date, "%Y-%m-%d")
+        new_date = date + timedelta(days=days)
+        return new_date.strftime("%Y-%m-%d")
 
     @tool.get('/get_daily_prices')
     def get_daily_prices(symbol : str, date : str = ''):
