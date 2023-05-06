@@ -21,6 +21,7 @@ def build_tool(config) -> Tool:
 
     @tool.get("/get_distance")
     def get_distance(start:str, end:str):
+        """Get the distance between two locations in miles"""
         # Request URL
         url = BASE_URL + "Routes/Driving?o=json&wp.0=" + start + "&wp.1=" + end + "&key=" + KEY
         # GET request
@@ -34,6 +35,7 @@ def build_tool(config) -> Tool:
     
     @tool.get("/get_route")
     def get_route(start:str, end:str):
+        """Get the route between two locations in miles"""
         # Request URL
         url = BASE_URL + "Routes/Driving?o=json&wp.0=" + start + "&wp.1=" + end + "&key=" + KEY
         # GET request
@@ -51,6 +53,7 @@ def build_tool(config) -> Tool:
     
     @tool.get("/get_coordinates")
     def get_coordinates(location):
+        """Get the coordinates of a location"""
         url = BASE_URL + "Locations"
         params = {
             "query": location,
@@ -63,6 +66,7 @@ def build_tool(config) -> Tool:
     
     @tool.get("/search_nearby")
     def search_nearyby(search_term="restaurant", latitude = 0.0, longitude = 0.0, places='unknown', radius = 5000): #  radius in meters)
+        """Search for places nearby a location, within a given radius, and return the results into a list"""
         url = BASE_URL + "LocalSearch"
         if places != 'unknown':
             latitude = get_coordinates(places)[0]
