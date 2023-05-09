@@ -87,6 +87,11 @@ def build_tool(config) -> Tool:
 
         # Get the results
         results = response_data["resourceSets"][0]["resources"]
-        return results
+        addresses = []
+        for result in results:
+            name = result["name"]
+            address = result["Address"]["formattedAddress"]
+            addresses.append(f"{name}: {address}")
+        return addresses
     
     return tool
