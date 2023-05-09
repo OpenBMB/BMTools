@@ -65,7 +65,7 @@ def build_tool(config) -> Tool:
         return coordinates
     
     @tool.get("/search_nearby")
-    def search_nearyby(search_term="restaurant", latitude = 0.0, longitude = 0.0, places='unknown', radius = 5000): #  radius in meters)
+    def search_nearyby(search_term:str="restaurant", latitude:float = 0.0, longitude:float = 0.0, places:str='unknown', radius:int = 5000): #  radius in meters
         """Search for places nearby a location, within a given radius, and return the results into a list"""
         url = BASE_URL + "LocalSearch"
         if places != 'unknown':
