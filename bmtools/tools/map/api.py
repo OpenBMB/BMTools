@@ -21,6 +21,7 @@ def build_tool(config) -> Tool:
 
     @tool.get("/get_distance")
     def get_distance(start:str, end:str):
+        """Get the distance between two locations in miles"""
         # Request URL
         url = BASE_URL + "Routes/Driving?o=json&wp.0=" + start + "&wp.1=" + end + "&key=" + KEY
         # GET request
@@ -34,6 +35,7 @@ def build_tool(config) -> Tool:
     
     @tool.get("/get_route")
     def get_route(start:str, end:str):
+        """Get the route between two locations in miles"""
         # Request URL
         url = BASE_URL + "Routes/Driving?o=json&wp.0=" + start + "&wp.1=" + end + "&key=" + KEY
         # GET request
@@ -49,8 +51,9 @@ def build_tool(config) -> Tool:
                 route_text.append(item["instruction"]["text"])
         return route_text
     
-    @tool.get("/get_lat_lon")
-    def get_lat_lon(location):
+    @tool.get("/get_coordinates")
+    def get_coordinates(location):
+        """Get the coordinates of a location"""
         url = BASE_URL + "Locations"
         params = {
             "query": location,
@@ -58,15 +61,16 @@ def build_tool(config) -> Tool:
         }
         response = requests.get(url, params=params)
         json_data = response.json()
-        lat_lon = json_data["resourceSets"][0]["resources"][0]["point"]["coordinates"]
-        return lat_lon
+        coordinates = json_data["resourceSets"][0]["resources"][0]["point"]["coordinates"]
+        return coordinates
     
     @tool.get("/search_nearby")
-    def search_nearyby(search_term="restaurant", latitude = 0.0, longitude = 0.0, places='unknown', radius = 5000): #  radius in meters)
+    def search_nearyby(search_term:str="restaurant", latitude:float = 0.0, longitude:float = 0.0, places:str='unknown', radius:int = 5000): #  radius in meters
+        """Search for places nearby a location, within a given radius, and return the results into a list"""
         url = BASE_URL + "LocalSearch"
         if places != 'unknown':
-            latitude = get_lat_lon(places)[0]
-            longitude = get_lat_lon(places)[1]
+            latitude = get_coordinates(places)[0]
+            longitude = get_coordinates(places)[1]
         # Build the request query string
         params = {
         "query": search_term,
@@ -83,6 +87,11 @@ def build_tool(config) -> Tool:
 
         # Get the results
         results = response_data["resourceSets"][0]["resources"]
-        return results
+        addresses = []
+        for result in results:
+            name = result["name"]
+            address = result["Address"]["formattedAddress"]
+            addresses.append(f"{name}: {address}")
+        return addresses
     
     return tool
