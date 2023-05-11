@@ -52,7 +52,7 @@ def build_tool(config) -> Tool:
         return route_text
     
     @tool.get("/get_coordinates")
-    def get_coordinates(location):
+    def get_coordinates(location:str):
         """Get the coordinates of a location"""
         url = BASE_URL + "Locations"
         params = {
