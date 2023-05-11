@@ -10,15 +10,16 @@ Contributor: [Xuanhe Zhou](https://github.com/zhouxh19)
 
 ### Dataset
 
-- Samples from text2sql
+- Text2SQL Dataset
 
     - *./data/tpch10x/text2res_multi_table.json*: relativley complex database queries (2-6 tables)
     - *./data/tpch10x/text2res_single_table.json*: basic database queries
 
-- Samples from query logs
+- SQL Optimization Dataset
 
-- Samples from database monitoring tools
+    - Samples for *[sql rewrite](https://github.com/TsinghuaDatabaseGroup/lmdb/tree/main/query_rewrite/data)*
 
+    - Samples for *[index tuning](https://github.com/TsinghuaDatabaseGroup/lmdb/tree/main/index_tuning/data)*
 
 ### Setup
 
