@@ -129,7 +129,6 @@ class BaiduMapAPI:
             destination_lat, destination_lng = destination_location
             url = f'{self.base_url}/direction/v2/transit?origin={origin_lat},{origin_lng}&destination={destination_lat},{destination_lng}&output=json&ak={self.ak}'
             url = self.generate_url_with_sn(url)
-            print(url)
             response = requests.get(url)
             data = response.json()
             if data['status'] == 0:
