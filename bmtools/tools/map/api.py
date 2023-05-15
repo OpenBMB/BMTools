@@ -7,7 +7,7 @@ from ..tool import Tool
 def build_tool(config) -> Tool:
     tool = Tool(
         "Map Info",
-        "Look up stock information",
+        "Look up map information",
         name_for_model="Map",
         description_for_model="Plugin for look up map information",
         logo_url="https://your-app-url.com/.well-known/logo.png",
