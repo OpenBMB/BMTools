@@ -13,6 +13,7 @@ server.load_tool("bing_search", {"subscription_key": os.getenv("BING_SUBSCRIPT_K
 server.load_tool("office-ppt")
 server.load_tool("stock", {"subscription_key": os.getenv("ALPHA_VANTAGE_KEY", None)})
 server.load_tool("map", {"subscription_key": os.getenv("BING_MAP_KEY", None)})
+server.load_tool("baidu_map", {"subscription_key": os.getenv("BAIDU_MAP_KEY", None), "baidu_secret_key": os.getenv("BAIDU_SECRET_KEY", None)})
 # server.load_tool("nllb-translation")
 server.load_tool("baidu-translation")
 server.load_tool("tutorial")

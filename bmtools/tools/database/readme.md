@@ -10,14 +10,29 @@ Contributor: [Xuanhe Zhou](https://github.com/zhouxh19)
 
 ### Dataset
 
-- *./data/tpch10x/text2res_multi_table.json*: relativley complex database queries (2-6 tables)
-- *./data/tpch10x/text2res_single_table.json*: basic database queries
+- Text2SQL Dataset
+
+    - *./data/tpch10x/text2res_multi_table.json*: relativley complex database queries (2-6 tables)
+    - *./data/tpch10x/text2res_single_table.json*: basic database queries
+
+- SQL Optimization Dataset
+
+    - Samples for *[sql rewrite](https://github.com/TsinghuaDatabaseGroup/lmdb/tree/main/query_rewrite/data)*
+
+    - Samples for *[index tuning](https://github.com/TsinghuaDatabaseGroup/lmdb/tree/main/index_tuning/data)*
 
 ### Setup
 
 1. Follow the steps in [main readme](https://github.com/OpenBMB/BMTools/blob/main/README.md)
 
+
 2. Rename config.ini.template into my_config.ini
+
+3. Configure the adopted LLM model in the 84th line of ../../agent/singletool.py, e.g., 
+
+```bash
+    self.llm = OpenAI(model_name="gpt-3.5-turbo", temperature=0.0, openai_api_key=key)
+```
 
 3. Modify database settings in my_config.ini, e.g.,
 

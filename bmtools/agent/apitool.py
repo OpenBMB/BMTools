@@ -6,6 +6,7 @@ from langchain.agents import Tool as LangChainTool
 from langchain.tools.base import BaseTool
 import requests
 import json
+import aiohttp
 import http.client
 http.client._MAXLINE = 655360
 
@@ -21,6 +22,7 @@ class RequestTool(BaseTool):
 
     description: str = ""
     func: Callable[[str], str]
+    afunc: Callable[[str], str]
     coroutine: Optional[Callable[[str], Awaitable[str]]] = None
     max_output_len = 4000
     tool_logo_md: str = ""
@@ -31,10 +33,8 @@ class RequestTool(BaseTool):
 
     async def _arun(self, tool_input: str) -> str:
         """Use the tool asynchronously."""
-        if self.coroutine:
-            return await self.coroutine(tool_input)
-        raise NotImplementedError("Tool does not support async")
-
+        ret = await self.afunc(tool_input)
+        return ret
 
     def convert_prompt(self,params):
         lines = "Your input should be a json (args json schema): {{"
@@ -46,20 +46,20 @@ class RequestTool(BaseTool):
                 description = "("+description+")"
 
             lines +=  '"{name}" : {type}{desc}, '.format(name=p['name'],
-                type= p['schema']['type'], 
+                type= p['schema']['type'],
                 optional=optional,
                 desc=description)
 
         lines += "}}"
         return lines
-        
+
 
 
     def __init__(self, root_url, func_url, method, request_info,  **kwargs):
         """ Store the function, description, and tool_name in a class to store the information
         """
         url = root_url + func_url
-    
+
         def func(json_args):
             if isinstance(json_args, str):
                 try:
@@ -73,10 +73,29 @@ class RequestTool(BaseTool):
                 message = response.text
             else:
                 message = f"Error code {response.status_code}. You can try (1) Change your input (2) Call another function. (If the same error code is produced more than 4 times, please use Thought: I can not use these APIs, so I will stop. Final Answer: No Answer, please check the APIs.)"
-            
+
             message = message[:self.max_output_len] # TODO: not rigorous, to improve
             return message
-        
+
+        async def afunc(json_args):
+            if isinstance(json_args, str):
+                try:
+                    json_args = json.loads(json_args)
+                except:
+                    return "Your input can not be parsed as json, please use thought."
+                if "tool_input" in json_args:
+                    json_args = json_args["tool_input"]
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, params=json_args) as response:
+                    if response.status == 200:
+                        message = await response.text()
+                    else:
+                        message = f"Error code {response.status_code}. You can try (1) Change your input (2) Call another function. (If the same error code is produced more than 4 times, please use Thought: I can not use these APIs, so I will  stop. Final Answer: No Answer, please check the APIs.)"
+
+            message = message[:self.max_output_len] # TODO: not rigorous, to improve
+            return message
+
         tool_name = func_url.replace("/", ".").strip(".")
 
         if 'parameters' in request_info[method]:
@@ -96,6 +115,6 @@ class RequestTool(BaseTool):
         logger.info("API Description: {}".format(description))
 
         super(RequestTool, self).__init__(
-            name=tool_name, func=func, description=description, **kwargs
+            name=tool_name, func=func, afunc=afunc, description=description, **kwargs
         )
 
