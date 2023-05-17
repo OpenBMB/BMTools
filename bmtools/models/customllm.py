@@ -2,6 +2,7 @@
 # coding=utf-8
 from langchain.llms.base import LLM
 from typing import Optional, List, Mapping, Any
+import requests, json
 
 class CustomLLM(LLM):
     
@@ -11,8 +12,53 @@ class CustomLLM(LLM):
     def _llm_type(self) -> str:
         return "custom"
     
-    def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
-        output = "your customized response"
+    def _call(self, prompt, stop: Optional[List[str]] = None) -> str:
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        # Assume this is an url providing your customized LLM service, we use the openai api as an example.
+        url = "http://47.254.22.102:8989/chat"
+        
+        if isinstance(prompt, str):
+            message = [
+                {"role": "system", "content": "You are a user what to consult the assistant."},
+                {"role": "user", "content": prompt},
+            ]
+        else:
+            message = prompt
+
+        payload = {
+            "model": "gpt-3.5-turbo",
+            "messages": message,
+            "max_tokens": 512,
+            "frequency_penalty": 0,
+            "presence_penalty": 0,
+            "temperature": 0.0,
+            "best_of": 3,
+            "stop": stop,
+        }
+        try_times = 10
+        while(try_times > 0):
+            try:
+                response = requests.post(url, json=payload, headers=headers)
+                if isinstance(prompt, str):
+                    output = json.loads(response.text)["choices"][0]["message"]["content"]
+                else:
+                    output = response.text
+                break
+            except:
+                try_times -= 1
+                continue
+        if try_times == 0:
+            raise RuntimeError("Your LLM service is not available.")
+
+        print("\n--------------------")
+        print(prompt)
+        print("\n********************")
+        print(output)
+        print("\n--------------------")
+        input()
 
         return output
     
