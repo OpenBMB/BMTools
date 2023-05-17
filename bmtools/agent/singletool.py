@@ -10,7 +10,7 @@ from bmtools.agent.apitool import RequestTool
 from bmtools.agent.executor import Executor, AgentExecutorWithTranslation
 from bmtools import get_logger
 from bmtools.agent.BabyagiTools import BabyAGI
-# from bmtools.models.customllm import CustomLLM
+#from bmtools.models.customllm import CustomLLM
 
 
 logger = get_logger(__name__)
@@ -78,13 +78,14 @@ class STQuestionAnswerer:
     
     def set_openai_api_key(self, key):
         logger.info("Using {}".format(self.llm_model))
+        
         if self.llm_model == "GPT-3.5":
             self.llm = OpenAI(temperature=0.0, openai_api_key=key)  # use text-darvinci
         elif self.llm_model == "ChatGPT":
             self.llm = OpenAI(model_name="gpt-3.5-turbo", temperature=0.0, openai_api_key=key)  # use chatgpt
         else:
             raise RuntimeError("Your model is not available.")
-
+        
     def load_tools(self, name, meta_info, prompt_type="react-with-tool-description", return_intermediate_steps=True):
 
         self.all_tools_map = {}
@@ -98,7 +99,9 @@ class STQuestionAnswerer:
             description_for_model = meta_info['description_for_model'].replace("{", "{{").replace("}", "}}").strip()
 
             prefix = f"""Answer the following questions as best you can. General instructions are: {description_for_model}. Specifically, you have access to the following APIs:"""
-            suffix = """Begin! Remember: (1) Follow the format, i.e,\nThought:\nAction:\nAction Input:\nObservation:\nFinal Answer:\n (2) Provide as much as useful information in your Final Answer. (3) YOU MUST INCLUDE all relevant IMAGES in your Final Answer using format ![img](url), and include relevant links. (3) Do not make up anything, and if your Observation has no link, DO NOT hallucihate one. (4) If you have enough information, please use \nThought: I have got enough information\nFinal Answer: \n\nQuestion: {input}\n{agent_scratchpad}"""
+            #suffix = """Begin! Remember: (1) Follow the format, i.e,\nThought:\nAction:\nAction Input:\nObservation:\nFinal Answer:\n (2) Provide as much as useful information in your Final Answer. (3) YOU MUST INCLUDE all relevant IMAGES in your Final Answer using format ![img](url), and include relevant links. (3) Do not make up anything, and if your Observation has no link, DO NOT hallucihate one. (4) If you have enough information, please use \nThought: I have got enough information\nFinal Answer: \n\nQuestion: {input}\n{agent_scratchpad}"""
+            suffix = """Begin! Remember: (1) Follow the format, i.e,\nThought:\nAction:\nAction Input:\nObservation:\nFinal Answer:\n. The action you generate must be exact one of the given API names instead of a sentence or any other redundant text. The action input is one json format dict without any redundant text or bracket descriptions . (2) Provide as much as useful information (such as useful values/file paths in your observation) in your Final Answer. Do not describe the process you achieve the goal, but only provide the detailed answer or response to the task goal. (3) Do not make up anything. DO NOT generate observation content by yourself. (4) Read the observation carefully, and pay attention to the messages even if an error occurs. (5) Once you have enough information, please immediately use \nThought: I have got enough information\nFinal Answer: \n\nTask: {input}\n{agent_scratchpad}"""
+            
             prompt = ZeroShotAgent.create_prompt(
                 self.all_tools_map[name], 
                 prefix=prefix, 
