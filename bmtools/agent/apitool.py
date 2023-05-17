@@ -68,7 +68,13 @@ class RequestTool(BaseTool):
                     return "Your input can not be parsed as json, please use thought."
                 if "tool_input" in json_args:
                     json_args = json_args["tool_input"]
-            response = requests.get(url, json_args)
+
+            # 如果是post put patch 则以json方式提交
+            if method.lower() in ['post', 'put', 'patch']:
+                response = getattr(requests, method.lower())(url, json=json_args)
+            else:
+                # 对于所有其他方法，我们将使用get，并将json_args作为查询参数传递
+                response = requests.get(url, params=json_args)
             if response.status_code == 200:
                 message = response.text
             else:
@@ -76,6 +82,30 @@ class RequestTool(BaseTool):
 
             message = message[:self.max_output_len] # TODO: not rigorous, to improve
             return message
+
+        def convert_openapi_to_params(request_body):
+            if not request_body:
+                return []
+            params = []
+            for content_type, content in request_body['content'].items():
+                schema = content['schema']
+                properties = schema['properties']
+                required = schema.get('required', [])
+                for key, value in properties.items():
+                    param = {
+                        'name': key,
+                        'schema': value,
+                        'required': key in required,
+                        'description': value.get('description', '')
+                    }
+                    if content_type == 'multipart/form-data' and value.get('format') == 'binary':
+                        param['type'] = 'file'
+                    elif content_type in ['application/x-www-form-urlencoded', 'multipart/form-data']:
+                        param['type'] = 'form'
+                    else:
+                        param['type'] = 'json'
+                    params.append(param)
+            return params
 
         async def afunc(json_args):
             if isinstance(json_args, str):
@@ -97,11 +127,13 @@ class RequestTool(BaseTool):
             return message
 
         tool_name = func_url.replace("/", ".").strip(".")
-
+        str_doc = ''
         if 'parameters' in request_info[method]:
             str_doc = self.convert_prompt(request_info[method]['parameters'])
-        else:
-            str_doc = ''
+
+        if 'requestBody' in request_info[method]:
+            str_doc = str_doc + "\n" + self.convert_prompt(
+                convert_openapi_to_params(request_info[method]['requestBody']))
 
 
         # description = f"- {tool_name}:\n" + \
