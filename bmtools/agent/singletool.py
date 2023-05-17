@@ -35,8 +35,9 @@ def import_all_apis(tool_json):
     all_apis = []
     for key in plugin['paths']:
         value = plugin['paths'][key]
-        api = RequestTool(root_url=server_url, func_url=key, method='get', request_info=value)
-        all_apis.append(api)
+        for method in value:
+            api = RequestTool(root_url=server_url, func_url=key, method=method, request_info=value)
+            all_apis.append(api)
     return all_apis
 
 def load_single_tools(tool_name, tool_url):
