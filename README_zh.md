@@ -2,6 +2,17 @@
     <h1><img src="docs/logo.png" height="28px" /> BMTools</h1>
 </div>
 
+<p align="center">
+  <a href="#whats-new">新闻</a> •
+  <a href="#1-setup">设置</a> •
+  <a href="#2-use-existing-tools">如何使用</a> •
+  <a href="https://arxiv.org/abs/2304.08354">综述</a> •
+  <a href="https://github.com/thunlp/ToolLearningPapers">论文列表</a> •
+  <a href="https://huggingface.co/spaces/congxin95/BMTools-demo">试用</a> •
+  <a href="#citation">引用</a> •
+</p>
+
+
 *Read this in [English](README.md).*
 
 ![bmtools](docs/overview.png)

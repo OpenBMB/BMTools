@@ -69,11 +69,11 @@ class RequestTool(BaseTool):
                 if "tool_input" in json_args:
                     json_args = json_args["tool_input"]
 
-            # 如果是post put patch 则以json方式提交
+            # if it's post put patch, then we do json
             if method.lower() in ['post', 'put', 'patch']:
                 response = getattr(requests, method.lower())(url, json=json_args)
             else:
-                # 对于所有其他方法，我们将使用get，并将json_args作为查询参数传递
+                # for other methods, we use get, and use json_args as query params
                 response = requests.get(url, params=json_args)
             if response.status_code == 200:
                 message = response.text
