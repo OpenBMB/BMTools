@@ -23,6 +23,8 @@ BMTools 是一能让语言模型使用扩展工具的开源仓库，其也是开
 
 ## 最新支持
 
+- **[2023/5/18]** ACL 2023 工作 [WebCPM](https://github.com/thunlp/WebCPM) 代码，中文版 WebGPT.
+
 - **[2023/4/24]** 已经支持 [Auto-GPT](https://github.com/Significant-Gravitas/Auto-GPT).
 
 - **[2023/4/14]** 已经支持 [BabyAGI](https://github.com/yoheinakajima/babyagi).
