@@ -10,7 +10,7 @@ from bmtools.agent.apitool import RequestTool
 from bmtools.agent.executor import Executor, AgentExecutorWithTranslation
 from bmtools import get_logger
 from bmtools.agent.BabyagiTools import BabyAGI
-#from bmtools.models.customllm import CustomLLM
+# from bmtools.models.customllm import CustomLLM
 
 
 logger = get_logger(__name__)
@@ -35,8 +35,9 @@ def import_all_apis(tool_json):
     all_apis = []
     for key in plugin['paths']:
         value = plugin['paths'][key]
-        api = RequestTool(root_url=server_url, func_url=key, method='get', request_info=value)
-        all_apis.append(api)
+        for method in value:
+            api = RequestTool(root_url=server_url, func_url=key, method=method, request_info=value)
+            all_apis.append(api)
     return all_apis
 
 def load_single_tools(tool_name, tool_url):
@@ -96,6 +97,7 @@ class STQuestionAnswerer:
         if prompt_type == "zero-shot-react-description":
             subagent = initialize_agent(self.all_tools_map[name], self.llm, agent="zero-shot-react-description", verbose=True, return_intermediate_steps=return_intermediate_steps)
         elif prompt_type == "react-with-tool-description":
+            # customllm = CustomLLM()
             description_for_model = meta_info['description_for_model'].replace("{", "{{").replace("}", "}}").strip()
 
             prefix = f"""Answer the following questions as best you can. General instructions are: {description_for_model}. Specifically, you have access to the following APIs:"""
@@ -109,6 +111,7 @@ class STQuestionAnswerer:
                 input_variables=["input", "agent_scratchpad"]
             )
             llm_chain = LLMChain(llm=self.llm, prompt=prompt)
+            # llm_chain = LLMChain(llm=customllm, prompt=prompt)
             logger.info("Full prompt template: {}".format(prompt.template))
             tool_names = [tool.name for tool in self.all_tools_map[name] ]
             agent = ZeroShotAgent(llm_chain=llm_chain, allowed_tools=tool_names)
@@ -188,7 +191,6 @@ class STQuestionAnswerer:
             #         message_dicts, params = self._create_message_dicts(messages, stop)
             #         response = customllm(message_dicts)
             #         response = json.loads(response)
-            #         print(response)
             #         # response = self.completion_with_retry(messages=message_dicts, **params)
             #         return self._create_chat_result(response)
                 
