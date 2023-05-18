@@ -10,7 +10,7 @@ from bmtools.agent.apitool import Tool
 from bmtools.agent.singletool import STQuestionAnswerer
 from bmtools.agent.executor import Executor, AgentExecutorWithTranslation
 from bmtools import get_logger
-#from bmtools.models.customllm import CustomLLM
+from bmtools.models.customllm import CustomLLM
 
 logger = get_logger(__name__)
 
