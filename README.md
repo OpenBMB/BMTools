@@ -44,6 +44,8 @@ This project is inspired by the open-source project [LangChain](https://github.c
 
 ## What's New
 
+- **[2023/5/19]** Three new Tools are supported: Baidu Map, Google Scholar Search, and Zillow
+
 - **[2023/5/18]** [WebCPM](https://github.com/thunlp/WebCPM) is accepted by ACL 2023, a Chinese version of WebGPT.
 
 - **[2023/4/24]** [Auto-GPT](https://github.com/Significant-Gravitas/Auto-GPT) is supported in BMTools.
