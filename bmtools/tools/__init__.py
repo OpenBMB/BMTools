@@ -15,6 +15,8 @@ from . import meta_analysis
 from . import database
 from . import code_interpreter
 from . import arxiv
+from . import zillow
+from . import google_scholar
 
 from .tool import Tool
 from .registry import register
