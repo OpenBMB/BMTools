@@ -92,7 +92,7 @@ def build_tool(config) -> Tool:
         legal_info_url="hello@legal.com"
     )
     
-    model_name: ModelName = ModelName.DALL_E # TODO: choose model and image size
+    model_name: ModelName = ModelName.DALL_E # choose model and image size?
     size: Optional[str] = "512x512"
     return_urls: Optional[bool] = False
     steamship_api_key = os.environ.get('STEAMSHIP_API_KEY', '')
@@ -118,7 +118,7 @@ def build_tool(config) -> Tool:
         if len(blocks) > 0:
             if return_urls:
                 output_uiud = make_image_public(steamship, blocks[0])
-            # TODO: print image?
+            # print image?
             # show_output(output_uiud) 
             return output_uiud
         raise RuntimeError("Tool unable to generate image!")
