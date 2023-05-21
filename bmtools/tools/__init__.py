@@ -17,6 +17,12 @@ from . import code_interpreter
 from . import arxiv
 from . import zillow
 from . import google_scholar
+from . import google_places
+from . import google_serper
+from . import python
+from . import sceneXplain
+from . import shell
+from . import image_generation
 
 from .tool import Tool
 from .registry import register
