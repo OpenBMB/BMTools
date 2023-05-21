@@ -50,16 +50,6 @@ agent = qa.load_tools(tools_name, tools_config)
 # print(answer)
 
 
-# to be supported
-
-# answer = agent("Please generate a picture of a cat.")
-# print(answer)
-
-
-# answer = agent("What does the picture a.jpg shows?")
-# print(answer)
-
-
 # answer = agent("What does the man say in the audio `test.flac`?")
 # print(answer)
 
@@ -72,5 +62,23 @@ agent = qa.load_tools(tools_name, tools_config)
 # answer = agent("classify this audio: `test.flac`")
 # print(answer)
 
-# answer = agent("Generate a picture of the content in the audio.")
+# answer = agent("Please generate a picture of a cat.")
+# print(answer)
+
+# answer = agent("What does the picture `boat.png` shows?")
+# print(answer)
+
+answer = agent("Please divide the `boat.png` into proper segments using appropriate models.")
+print(answer)
+
+# answer = agent("Detect the objects in the picture `boat.png`.")
+# print(answer)
+
+# answer = agent("Classify the picture `boat.png`.")
+# print(answer)
+
+# answer = agent("Answer the question according to the photo `boat.png`: what is it?")
+# print(answer)
+
+# answer = agent("Answer the question based on the content of the document screenshot `doc.jpg`: What is the topic of this document?(hint: use the document-question-answering)")
 # print(answer)

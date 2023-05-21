@@ -14,6 +14,7 @@ from . import file_operation
 from . import meta_analysis
 from . import database
 from . import code_interpreter
+from . import hugging_tools
 from . import arxiv
 from . import zillow
 from . import google_scholar
