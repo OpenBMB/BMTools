@@ -13,7 +13,7 @@ from . import tutorial
 from . import file_operation
 from . import meta_analysis
 from . import database
-from . import code_interpreter
+from . import db_diag
 
 from .tool import Tool
 from .registry import register
