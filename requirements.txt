@@ -13,3 +13,6 @@ sentencepiece
 faiss-cpu
 psycopg2
 pymysql
+arxiv
+googlemaps
+steamship

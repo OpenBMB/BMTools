@@ -2,6 +2,17 @@
     <h1><img src="docs/logo.png" height="28px" /> BMTools</h1>
 </div>
 
+<p align="center">
+  <a href="#whats-new">新闻</a> •
+  <a href="#1-setup">设置</a> •
+  <a href="#2-use-existing-tools">如何使用</a> •
+  <a href="https://arxiv.org/abs/2304.08354">综述</a> •
+  <a href="https://github.com/thunlp/ToolLearningPapers">论文列表</a> •
+  <a href="https://huggingface.co/spaces/congxin95/BMTools-demo">试用</a> •
+  <a href="#citation">引用</a> •
+</p>
+
+
 *Read this in [English](README.md).*
 
 ![bmtools](docs/overview.png)
@@ -11,6 +22,10 @@ BMTools 是一能让语言模型使用扩展工具的开源仓库，其也是开
 本项目受到开源项目[LangChain](https://github.com/hwchase17/langchain/)的启发，针对开源工具的使用（例如[ChatGPT-Plugins](https://openai.com/blog/chatgpt-plugins)）进行了优化，力图实现 ChatGPT-Plugins 的开源学术版本。
 
 ## 最新支持
+
+- **[2023/5/19]** 中文地图map工具（百度地图API), Google学术搜索工具(SerpAPI), 北美房地产信息工具Zillow(RapidAPI) 上线
+
+- **[2023/5/18]** ACL 2023 工作 [WebCPM](https://github.com/thunlp/WebCPM) 代码，中文版 WebGPT.
 
 - **[2023/4/24]** 已经支持 [Auto-GPT](https://github.com/Significant-Gravitas/Auto-GPT).
 

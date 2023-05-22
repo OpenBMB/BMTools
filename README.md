@@ -9,8 +9,9 @@
   <a href="#whats-new">News</a> •
   <a href="#1-setup">Setup</a> •
   <a href="#2-use-existing-tools">How To Use</a> •
-  <a href="https://thunlp.github.io/OpenPrompt/">Docs</a> •
   <a href="https://arxiv.org/abs/2304.08354">Paper</a> •
+  <a href="https://github.com/thunlp/ToolLearningPapers">Paper List</a> •
+  <a href="https://huggingface.co/spaces/congxin95/BMTools-demo">Demo</a> •
   <a href="#citation">Citation</a> •
 </p>
 
@@ -42,6 +43,10 @@ This project is inspired by the open-source project [LangChain](https://github.c
 
 
 ## What's New
+
+- **[2023/5/19]** Three new Tools are supported: Baidu Map, Google Scholar Search, and Zillow
+
+- **[2023/5/18]** [WebCPM](https://github.com/thunlp/WebCPM) is accepted by ACL 2023, a Chinese version of WebGPT.
 
 - **[2023/4/24]** [Auto-GPT](https://github.com/Significant-Gravitas/Auto-GPT) is supported in BMTools.
 

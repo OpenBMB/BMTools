@@ -14,6 +14,17 @@ from . import file_operation
 from . import meta_analysis
 from . import database
 from . import db_diag
+from . import code_interpreter
+from . import hugging_tools
+from . import arxiv
+from . import zillow
+from . import google_scholar
+from . import google_places
+from . import google_serper
+from . import python
+from . import sceneXplain
+from . import shell
+from . import image_generation
 
 from .tool import Tool
 from .registry import register

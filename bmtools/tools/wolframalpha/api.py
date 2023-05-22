@@ -1,16 +1,8 @@
 
 import requests
-from bs4 import BeautifulSoup
 from ..tool import Tool
-from pydantic import BaseModel
-from typing import Any, Optional
-from uuid import UUID
-import fastapi
-from fastapi_sessions.backends.implementations import InMemoryBackend
-from fastapi_sessions.session_verifier import SessionVerifier
-from fastapi_sessions.frontends.implementations import SessionCookie, CookieParameters
+from typing import Any
 import os
-import json
 import xmltodict
 
 

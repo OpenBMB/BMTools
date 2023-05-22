@@ -25,3 +25,6 @@ __pycache__/
 cache/
 
 secret_keys_mine.sh
+my_secret_keys.sh
+
+data/
