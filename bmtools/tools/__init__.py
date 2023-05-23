@@ -27,7 +27,7 @@ from . import shell
 from . import image_generation
 from . import airbnb
 from . import job_search
-
+from . import travel
 
 from .tool import Tool
 from .registry import register
