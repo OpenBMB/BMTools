@@ -25,6 +25,9 @@ from . import python
 from . import sceneXplain
 from . import shell
 from . import image_generation
+from . import airbnb
+from . import job_search
+
 
 from .tool import Tool
 from .registry import register
