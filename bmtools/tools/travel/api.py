@@ -15,7 +15,7 @@ def build_tool(config) -> Tool:
         "Travel Info",
         "Look up travel infomation about lodging, flight, car rental and landscape",
         name_for_model="Travel",
-        description_for_model="""This is a plugin for look up real travel infomation. Results from this API are inaccessible for users. Please organize and re-present them.""",
+        description_for_model="""This is a plugin for looking up real travel infomation. Results from this API are inaccessible for users. Please organize and re-present them.""",
         logo_url="https://your-app-url.com/.well-known/logo.png",
         contact_email="hello@contact.com",
         legal_info_url="hello@legal.com"
