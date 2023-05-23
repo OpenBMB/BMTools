@@ -6,9 +6,9 @@ from ..tool import Tool
 
 def build_tool(config) -> Tool:
     tool = Tool(
-        "Map Info",
+        "Map Info form bing map api",
         "Look up map information",
-        name_for_model="Map",
+        name_for_model="BingMap",
         description_for_model="Plugin for look up map information",
         logo_url="https://your-app-url.com/.well-known/logo.png",
         contact_email="hello@contact.com",
