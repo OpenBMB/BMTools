@@ -13,6 +13,7 @@ from . import tutorial
 from . import file_operation
 from . import meta_analysis
 from . import database
+from . import db_diag
 from . import code_interpreter
 from . import hugging_tools
 from . import arxiv
@@ -24,6 +25,9 @@ from . import python
 from . import sceneXplain
 from . import shell
 from . import image_generation
+from . import airbnb
+from . import job_search
+
 
 from .tool import Tool
 from .registry import register

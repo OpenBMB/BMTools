@@ -276,4 +276,10 @@ def get_logger(name: Optional[str] = None, verbosity='info') -> logging.Logger:
     _configure_library_root_logger()
     logger = logging.getLogger(name)
     logger.setLevel(log_levels[verbosity])
+
+    # Set up a file handler to write log messages to a file
+    # file_handler = logging.FileHandler('/Users/xuanhe/Documents/our-paper/instructdb/code/BMTools/bmtools/tools/database/my_log_file.log')
+    # file_handler.setLevel(log_levels[verbosity])
+    # logger.addHandler(file_handler)
+
     return logger
