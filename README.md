@@ -1,6 +1,6 @@
 
 <div align= "center">
-    <h1><img src="docs/logo.png" height="28px" /> BMTools</h1>
+    <h1><img src="assets/logo.png" height="28px" /> BMTools</h1>
 </div>
 
 
@@ -23,7 +23,7 @@
 <br>
 
 <div align="center">
-<img src="docs/overview.png" width="700px">
+<img src="assets/overview.png" width="700px">
 </div>
 <br>
 
@@ -37,7 +37,7 @@ This project is inspired by the open-source project [LangChain](https://github.c
 
 <div align="center">
 
-<img src="docs/meta0423.gif" width="700px">
+<img src="assets/meta0423.gif" width="700px">
 
 </div>
 
@@ -57,6 +57,9 @@ This project is inspired by the open-source project [LangChain](https://github.c
 
 ```bash
 git clone git@github.com:OpenBMB/BMTools.git
+cd BMTools
+pip install --upgrade pip
+pip install -r requirements.txt
 python setup.py develop
 ```
 
