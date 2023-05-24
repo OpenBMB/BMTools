@@ -52,11 +52,14 @@ def load_map_tool():
     #     raise RuntimeError("Baidu map key not provided, please register one from https://lbsyun.baidu.com/apiconsole/key and add it to environment variables.")
     # server.load_tool("baidu_map", {"subscription_key": BAIDU_MAP_KEY, "baidu_secret_key": BAIDU_SECRET_KEY})
 
-def load_zillow_tool():
+def load_rapidapi_tool():
     RAPIDAPI_KEY = os.environ.get('RAPIDAPI_KEY', None)
     if not RAPIDAPI_KEY:
         raise RuntimeError("RAPIDAPI_KEY not provided, please register one from https://rapidapi.com/ and add it to environment variables.")
     server.load_tool("zillow", {"subscription_key": RAPIDAPI_KEY})
+    server.load_tool("airbnb", {"subscription_key": RAPIDAPI_KEY})
+    server.load_tool("job_search", {"subscription_key": RAPIDAPI_KEY})
+
 
 # def load_nllb_translation_tool():
 #     server.load_tool("nllb-translation")
@@ -64,7 +67,7 @@ def load_zillow_tool():
 def load_baidu_translation_tool():
     server.load_tool("baidu-translation")
 
-def load_klarna_tool():
+def load_tutorial_tool():
     server.load_tool("tutorial")
 
 def load_file_operation_tool():
@@ -124,10 +127,10 @@ if __name__ == "__main__":
     load_office_ppt_tool()
     load_alpha_vantage_tool()
     load_map_tool()
-    load_zillow_tool()
+    load_rapidapi_tool()
     # load_nllb_translation_tool()
     load_baidu_translation_tool()
-    load_klarna_tool()
+    load_tutorial_tool()
     load_file_operation_tool()
     load_meta_analysis_tool()
     load_code_interpreter_tool()
@@ -140,8 +143,3 @@ if __name__ == "__main__":
     load_image_generation_tool()
 
     server.serve()
-
-
-server.load_tool("airbnb", {"subscription_key": os.getenv("RAPIDAPI_KEY", None)})
-server.load_tool("job_search", {"subscription_key": os.getenv("RAPIDAPI_KEY", None)})
-server.serve()

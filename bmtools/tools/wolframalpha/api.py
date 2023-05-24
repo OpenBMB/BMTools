@@ -26,9 +26,7 @@ def build_tool(config) -> Tool:
         """
         URL = "https://api.wolframalpha.com/v2/query"
         
-        APPID = os.environ.get("WOLFRAMALPH_APP_ID", "")
-        if len(APPID) == 0:
-            print("You should set you APPID by `export WOLFRAMALPH_APP_ID=XXXXX`")
+        APPID = config["subscription_key"]
 
         params = {'appid': APPID, "input": input}
         

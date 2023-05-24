@@ -8,11 +8,8 @@ from typing import Any, Dict, List, Optional
 import googlemaps
 
 class GooglePlacesAPIWrapper:
-    def __init__(self) -> None:
-        KEY = os.environ.get('GPLACES_API_KEY', '')
-        if KEY == '':
-            raise RuntimeError("GPLACES_API_KEY not provided, please register one from https://developers.google.com/maps/documentation/elevation/get-api-key and add it to environment variables.")
-        self.gplaces_api_key: str = KEY
+    def __init__(self, subscription_key) -> None:
+        self.gplaces_api_key: str = subscription_key
         self.google_map_client = googlemaps.Client(self.gplaces_api_key)
         self.top_k_results: Optional[int] = None
 
@@ -86,7 +83,7 @@ def build_tool(config) -> Tool:
         contact_email="hello@contact.com",
         legal_info_url="hello@legal.com"
     )
-    api_wrapper = GooglePlacesAPIWrapper()
+    api_wrapper = GooglePlacesAPIWrapper(config["subscription_key"])
     
     @tool.get("/search_places")
     def search_places(query : str):

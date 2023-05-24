@@ -9,17 +9,13 @@ from pydantic.main import BaseModel
 from pydantic.class_validators import root_validator
 
 class GoogleSerperAPIWrapper:
-    
-    def __init__(self) -> None:
+    def __init__(self, subscription_key) -> None:
         self.k: int = 10
         self.gl: str = "us"
         self.hl: str = "en"
         self.type: str = "search"  # type: search, images, places, news
         self.tbs: Optional[str] = None
-        KEY = os.environ.get('SERPER_API_KEY', '')
-        if KEY == '':
-            raise RuntimeError("SERPER_API_KEY not provided, please register one from https://serper.dev and add it to environment variables.")
-        self.serper_api_key: str = KEY
+        self.serper_api_key: str = subscription_key
         self.aiosession: Optional[aiohttp.ClientSession] = None
 
     def results(self, query: str, **kwargs: Any) -> Dict:
@@ -118,7 +114,7 @@ def build_tool(config) -> Tool:
         contact_email="hello@contact.com",
         legal_info_url="hello@legal.com"
     )
-    api_wrapper = GoogleSerperAPIWrapper()
+    api_wrapper = GoogleSerperAPIWrapper(config["subscription_key"])
     
     @tool.get("/search_general")
     def search_general(query : str):

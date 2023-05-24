@@ -11,7 +11,8 @@ transformers
 torch
 sentencepiece
 faiss-cpu
-psycopg2
+psycopg2-binary; platform_python_implementation == "CPython"
+psycopg2; platform_python_implementation != "CPython"
 pymysql
 arxiv
 googlemaps
