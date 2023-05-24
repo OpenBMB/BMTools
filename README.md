@@ -10,6 +10,7 @@
   <a href="#1-setup">Setup</a> •
   <a href="#2-use-existing-tools">How To Use</a> •
   <a href="https://arxiv.org/abs/2304.08354">Paper</a> •
+  <a href="https://bmtools.readthedocs.io/en/main/">Docs</a> •
   <a href="https://github.com/thunlp/ToolLearningPapers">Paper List</a> •
   <a href="https://huggingface.co/spaces/congxin95/BMTools-demo">Demo</a> •
   <a href="#citation">Citation</a> •

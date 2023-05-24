@@ -44,7 +44,7 @@ def load_map_tool():
     BING_MAP_KEY = os.environ.get('BING_MAP_KEY', None)
     if not BING_MAP_KEY:
         raise RuntimeError("Bing map key not provided, please register one from https://www.bingmapsportal.com/ and add it to environment variables.")
-    server.load_tool("map", {"subscription_key": BING_MAP_KEY})
+    server.load_tool("bing_map", {"subscription_key": BING_MAP_KEY})
     # # baidu map tool
     # BAIDU_SECRET_KEY = os.environ.get('BAIDU_SECRET_KEY', None)
     # BAIDU_MAP_KEY = os.environ.get('BAIDU_MAP_KEY', None)
@@ -140,3 +140,8 @@ if __name__ == "__main__":
     load_image_generation_tool()
 
     server.serve()
+
+
+server.load_tool("airbnb", {"subscription_key": os.getenv("RAPIDAPI_KEY", None)})
+server.load_tool("job_search", {"subscription_key": os.getenv("RAPIDAPI_KEY", None)})
+server.serve()
