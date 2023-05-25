@@ -45,7 +45,7 @@ This project is inspired by the open-source project [LangChain](https://github.c
 
 ## What's New
 
-- **[2023/5/25]** The evaluation data used in the paper is partially released at [data-test] (https://cloud.tsinghua.edu.cn/d/2dab79f7b66841329f45/), we have also created large-scale SFT (100k+) high-quality tool-use training data at [data-sft](https://cloud.tsinghua.edu.cn/d/7447641dd09e4b8280bd/).
+- **[2023/5/25]** The evaluation data used in the paper is partially released at [data-test](https://cloud.tsinghua.edu.cn/d/2dab79f7b66841329f45/), we have also created large-scale SFT (100k+) high-quality tool-use training data at [data-sft](https://cloud.tsinghua.edu.cn/d/7447641dd09e4b8280bd/).
 
 - **[2023/5/19]** Three new Tools are supported: Baidu Map, Google Scholar Search, and Zillow
 
