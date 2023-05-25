@@ -7,7 +7,7 @@ import urllib
 import hashlib
 import os
 import json
-from ..tool import Tool
+from ...tool import Tool
 
 class BaiduMapAPI:
     def __init__(self, ak: str, sk: str):

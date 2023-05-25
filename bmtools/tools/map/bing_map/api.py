@@ -2,7 +2,7 @@
 import requests
 import os
 import json
-from ..tool import Tool
+from ...tool import Tool
 
 def build_tool(config) -> Tool:
     tool = Tool(
