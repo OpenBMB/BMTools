@@ -322,7 +322,7 @@ def build_tool(config) -> Tool:
             for item in filtered_results:
                 spot = {"spot_name": item["title"]}
             
-                for keyword in ("rating", "address", "website", "thumbnail", "description"):
+                for keyword in ("description", "address", "website", "rating",  "thumbnail"):
                     if keyword in item:
                         spot[keyword] = item[keyword]
             
