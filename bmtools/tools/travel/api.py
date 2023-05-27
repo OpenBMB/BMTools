@@ -213,12 +213,10 @@ def build_tool(config) -> Tool:
 
     @tool.get("/landscapeProducts")
     def landscapeProducts(destination: str,
-                          sorting_keywords: Optional[str] = "reviews",
                           exhibit_maxnum: Optional[int] = 3, ):
         """
         This function returns the scenic spot information given a destination.
         :param (str) destination: string of cityname, destination of arrival
-        :param (str, optional) sorting_keywords: ONLY 'rating' and 'reviews' ARE SUPPORTED BY NOW. sort the results according to this keywords in a descending order.
         :param (int, optional) exhibit_maxnum: int like 3, 4, 5. It determines how many spots to display.
         :return: Information about landscape around that destination.
         
@@ -243,6 +241,7 @@ def build_tool(config) -> Tool:
             local_results = results["local_results"]
         
             # Sort the results by the specified keyword if provided
+            sorting_keywords = "reviews"
             if sorting_keywords:
                 local_results = sorted(local_results, key=lambda x: x[sorting_keywords] if sorting_keywords in x else 0, reverse=True)
         
@@ -271,14 +270,12 @@ def build_tool(config) -> Tool:
     @tool.get("/carProducts")
     async def carProducts(
             pickup_location: str,
-            sorting_keywords: Optional[str] = "reviews",
             exhibit_maxnum: Optional[int] = 3,
     ):
         """
         Given a pickup location, returns a list of car rentals nearby.
         :param pickup_location: string of city name or location for the car rental pickups.
         :param exhibit_maxnum: number of rental cars to display.
-        :param sorting_keywords: sort rentals by 'rating' or 'reviews'.
         :return: a dict of data and some extra-information for the LLM.
         """
         try:
@@ -298,6 +295,7 @@ def build_tool(config) -> Tool:
             local_results = results["local_results"]
         
             # Sort results by rating or reviews keywords if sorting_keywords is specified
+            sorting_keywords = "reviews"
             if sorting_keywords:
                 local_results = sorted(
                     local_results,
