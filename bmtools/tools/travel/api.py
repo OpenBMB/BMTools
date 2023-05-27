@@ -192,15 +192,11 @@ def build_tool(config) -> Tool:
             for item in filterd_results:
                 info = {}
                 metadata = [
-                    "instantTicketingRequired",
-                    "source",
-                    "nonHomogeneous",
-                    "oneWay",
-                    "lastTicketingDate",
-                    "numberOfBookableSeats",
                     "itineraries",
                     "travelerPricings",
-                ]
+                    "lastTicketingDate", 
+                    "numberOfBookableSeats", 
+                    "source"]
             
                 # Only include relevant metadata in info
                 for key in metadata:
