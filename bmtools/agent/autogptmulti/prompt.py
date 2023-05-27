@@ -30,9 +30,11 @@ class AutoGPTPrompt(BaseChatPromptTemplate, BaseModel):
         full_prompt = (
             f"You are {self.ai_name}, {self.ai_role}\n{prompt_start}\n\nGOALS:\n\n"
         )
-        for i, goal in enumerate(goals):
-            full_prompt += f"{i+1}. {goal}\n"
-
+        if isinstance(goals, list):
+            for i, goal in enumerate(goals):
+                full_prompt += f"{i+1}. {goal}\n"
+        else:
+            full_prompt += f"{goals}\n"
         full_prompt += f"\n\n{get_prompt(self.tools)}"
         return full_prompt
 
