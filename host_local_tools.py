@@ -59,7 +59,12 @@ def load_rapidapi_tool():
     server.load_tool("zillow", {"subscription_key": RAPIDAPI_KEY})
     server.load_tool("airbnb", {"subscription_key": RAPIDAPI_KEY})
     server.load_tool("job_search", {"subscription_key": RAPIDAPI_KEY})
-
+   
+def load_travel_tool():
+    server.load_tool("travel")
+    
+def load_walmart_tool():
+    server.load_tool("walmart")
 
 # def load_nllb_translation_tool():
 #     server.load_tool("nllb-translation")
@@ -141,5 +146,7 @@ if __name__ == "__main__":
     load_sceneXplain_tool()
     load_shell_tool()
     load_image_generation_tool()
+    load_travel_tool()
+    load_walmart_tool()
 
     server.serve()
