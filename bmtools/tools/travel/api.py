@@ -154,7 +154,7 @@ def build_tool(config) -> Tool:
         This function returns the flight information between two cities.
         :param origin: (str) city name, origin of departure
         :param destination: (str) city name, destination of arrival
-        :param departureDate: (str, optional) Date formatted as "yyyy-mm-dd". EARLIER THAN THE REAL DATE. Pass None if not sure about this.
+        :param departureDate: (str, optional) Date formatted as "yyyy-mm-dd". It shoule be LATER than the PRESENT date. Pass None if not sure about this.
         :param adult_num: (str, optional) Number of adults for flight tickets
         :param exhibit_maxnum: (int, optional) Maximum number of items to show
         :return: (dict) information about flight.
@@ -273,7 +273,7 @@ def build_tool(config) -> Tool:
             print("ResponseError", error)
 
     @tool.get("/carProducts")
-    async def car_products(
+    async def carProducts(
             pickup_location: str,
             sorting_keywords: Optional[str] = "reviews",
             exhibit_maxnum: Optional[int] = 3,
