@@ -262,7 +262,7 @@ def build_tool(config) -> Tool:
             for item in filterd_results:
                 final_results.append({"spot_name": item["title"]})
             
-                for keywords in ("rating", "address", "website", "thumbnail", "description"):
+                for keywords in ("description", "address", "website", "rating", "thumbnail"):
                     if keywords in item:
                         final_results[-1][keywords] = item[keywords]
         
