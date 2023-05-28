@@ -1,0 +1,12 @@
+[
+    {
+        "cause_name": "large_table",
+        "desc": "This function checks whether the query related table is a root cause of performance issues. It considers two aspects: the size of the table and the number of tuples in the table. If the number of live and dead tuples in a table exceeds the tuple_number_threshold or the table size exceeds the table_total_size_threshold, then the table is considered large and added to the detail dictionary. If there are any large tables, then they are considered a root cause of performance issues. If there are no large tables, then they are not a root cause of performance issues.",
+        "metrics": "- live_tuples\n- dead_tuples\n- table_size"
+    },
+    {
+        "cause_name": "xxx",
+        "desc": "xxx",
+        "metrics": "xxx"
+    },
+]

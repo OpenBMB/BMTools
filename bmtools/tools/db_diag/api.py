@@ -5,19 +5,27 @@ import numpy as np
 import openai
 import paramiko
 
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import wordnet, stopwords
+from nltk.tokenize import word_tokenize 
+import nltk
 
 from ..tool import Tool
 from bmtools.tools.database.utils.db_parser import get_conf
 from bmtools.tools.database.utils.database import DBArgs, Database
 from bmtools.models.customllm import CustomLLM
+from bmtools.knowledge.knowledge_extraction import KnowledgeExtraction
 from bmtools.tools.db_diag.anomaly_detection import detect_anomalies
 from bmtools.tools.db_diag.anomaly_detection import prometheus
+
+from bmtools.tools.db_diag.example_generate import bm25
 
 
 def obtain_values_of_metrics(start_time, end_time, metrics):
 
     required_values = {}
 
+    print(" ====> metrics: ", metrics)
     for metric in metrics:
         metric_values = prometheus('api/v1/query_range', {'query': metric, 'start': start_time, 'end': end_time, 'step': '3'})
         if metric_values["data"]["result"] != []:
@@ -31,6 +39,33 @@ def obtain_values_of_metrics(start_time, end_time, metrics):
         required_values[metric] = max_value
 
     return required_values
+
+def find_abnormal_metrics(start_time, end_time, monitoring_metrics, resource):
+
+    resource_keys = ["memory", "cpu", "disk", "network"]
+
+    abnormal_metrics = []
+    for metric_name in monitoring_metrics:
+
+        interval_time = 5
+        metric_values = prometheus('api/v1/query_range', {'query': metric_name, 'start': start_time-interval_time*60, 'end': end_time+interval_time*60, 'step': '3'})
+
+        if metric_values["data"]["result"] != []:
+            metric_values = metric_values["data"]["result"][0]["values"]
+        else:
+            continue
+
+        if detect_anomalies(np.array([float(value) for _, value in metric_values])):
+            
+            success = True
+            for key in resource_keys:
+                if key in metric_name and key != resource:
+                    success = False
+                    break
+            if success:
+                abnormal_metrics.append(metric_name)
+
+    return abnormal_metrics
 
 
 def build_db_diag_tool(config) -> Tool:
@@ -53,6 +88,9 @@ def build_db_diag_tool(config) -> Tool:
                           "memory_usage": "node_memory_MemTotal_bytes{instance=~\"123.56.63.105:9100\"} - (node_memory_Cached_bytes{instance=~\"123.56.63.105:9100\"} + node_memory_Buffers_bytes{instance=~\"123.56.63.105:9100\"} + node_memory_MemFree_bytes{instance=~\"123.56.63.105:9100\"})",
                           "memory_metrics": ["pg_stat_activity_count{datname=~\"(imdbload|postgres|sysbench|template0|template1|tpcc|tpch)\", instance=~\"123.56.63.105:9187\", state=\"active\"} !=0"]}
 
+    # load knowlege extractor
+    knowledge_matcher = KnowledgeExtraction("/root_causes_dbmind.jsonl")
+
     # load db settings
     script_path = os.path.abspath(__file__)
     script_dir = os.path.dirname(script_path)
@@ -64,6 +102,10 @@ def build_db_diag_tool(config) -> Tool:
 
     server_config = get_conf(script_dir + '/my_config.ini', 'benchserver')
 
+    monitoring_metrics = []
+    with open(str(os.getcwd()) + "/bmtools/tools/db_diag/database_monitoring_metrics", 'r') as f:
+        monitoring_metrics = f.read()
+    monitoring_metrics = eval(monitoring_metrics)
 
     @tool.get("/obtain_start_and_end_time_of_anomaly")
     def obtain_start_and_end_time_of_anomaly():
@@ -91,6 +133,9 @@ def build_db_diag_tool(config) -> Tool:
             # Read the contents of each file
             for filename in files:
                 remote_filepath = server_config["remote_directory"] + '/' + filename
+
+                if "trigger_time_log" not in filename:
+                    continue
                 
                 tp = filename.split("_")[0]
                 
@@ -126,7 +171,8 @@ def build_db_diag_tool(config) -> Tool:
         else:
             raise Exception("No metric values found for the given time range")
 
-        is_abnormal = detect_anomalies(np.array([float(value) for _, value in metric_values]))
+        #is_abnormal = detect_anomalies(np.array([float(value) for _, value in metric_values]))
+        is_abnormal = True
 
         if is_abnormal:
             return "The metric is abnormal"
@@ -137,36 +183,25 @@ def build_db_diag_tool(config) -> Tool:
     @tool.get("/cpu_diagnosis_agent")
     def cpu_diagnosis_agent(start_time : int, end_time : int):
 
+        # live_tuples\n- dead_tuples\n- table_size
+
         cpu_metrics = prometheus_metrics["cpu_metrics"]
+        cpu_metrics = cpu_metrics + find_abnormal_metrics(start_time, end_time, monitoring_metrics, 'cpu')
+
+        print("==== cpu_metrics", cpu_metrics)
+
 
         detailed_cpu_metrics = obtain_values_of_metrics(start_time, end_time, cpu_metrics)
 
-        openai.api_key = os.environ["OPENAI_API_KEY"]
+        docs_str = knowledge_matcher.match(detailed_cpu_metrics)
 
-        prompt = """The CPU metric is abnormal. then obtain the three CPU relevant metric values from Prometheus, including the load over the last 1 minutes, the load over the last 5 minutes, and the load over the last 15 minutes.
+        prompt = """The CPU metric is abnormal. Then obtain the CPU relevant metric values from Prometheus: {}.
 
-Next output the analysis of potential causes of the high CPU usage based on the three CPU relevant metric values,
+Next output the analysis of potential causes of the high CPU usage based on the CPU relevant metric values,
 
-1. If the load over the last 1 minute is greater than 1, the load over the last 5 minutes is less than 1, and the load over the last 15 minutes is less than 1: 
-   - Short-term busyness, medium to long-term idle.
-   - This could be an indication of "jitter" or a "pre-congestion" state.
+{}""".format(detailed_cpu_metrics, docs_str)
 
-2. If the load over the last 1 minute is greater than 1, the load over the last 5 minutes is greater than 1, and the load over the last 15 minutes is less than 1: 
-   - Short-term busyness, medium-term tension.
-   - It is likely the start of a congestion situation.
-
-3. If the load over the last 1 minute is greater than 1, the load over the last 5 minutes is greater than 1, and the load over the last 15 minutes is greater than 1: 
-   - Short-term, medium-term, and long-term busyness.
-   - The system is "congested."
-
-4. If the load over the last 1 minute is less than 1, the load over the last 5 minutes is greater than 1, and the load over the last 15 minutes is greater than 1: 
-   - Short-term idle, medium to long-term busyness.
-   - No need to be alarmed, as the system is "improving congestion."
-
-The three CPU relevant metric values are {}
-        """.format(detailed_cpu_metrics)
-
-        # print(prompt)
+        print(prompt)
 
         # response = openai.Completion.create(
         # model="text-davinci-003",
@@ -202,6 +237,9 @@ The three CPU relevant metric values are {}
 
         memory_metrics = prometheus_metrics["memory_metrics"]
 
+        memory_metrics = prometheus_metrics["memory_metrics"]
+        memory_metrics = memory_metrics + find_abnormal_metrics(start_time, end_time, monitoring_metrics, 'memory')
+
         detailed_memory_metrics = obtain_values_of_metrics(start_time, end_time, memory_metrics)
 
         openai.api_key = os.environ["OPENAI_API_KEY"]
@@ -214,18 +252,27 @@ The three CPU relevant metric values are {}
             slow_query_state += str(i+1) + '. ' + str(query) + "\n"
 
         print(slow_query_state)
+        
+        # TODO: need a similarity match function to match the top-K examples
+        # 1. get the categories of incoming metrics. Such as "The abnormal metrics include A, B, C, D"
+        # 2. embedding the metrics
+        # note: 这个metrics的embedding有可能预计算吗？如果metrics的种类（组合数）有限的话
+        # 3. match the top-K examples(embedding)
+        # note: 不用embedding如何有效的筛选出来与当前metrics最相关的example呢？可以枚举吗？比如如果我知道某一个example涉及到哪些metrics？
+        #       该如何判断某一个metrics跟一段文本是相关的呢？能否用一个模型来判断一段文本涉及到哪些metrics呢？重新训练的话感觉需要很多样本才行
+        #       能不能用关键词数量？
 
-        prompt = """The memory metric is abnormal. The number of active sessions is {}. The slow queries are:
+        docs_str = knowledge_matcher.match(detailed_memory_metrics)
+
+        prompt = """The memory metric is abnormal. Then obtain the memory metric values from Prometheus: {}. The slow queries are:
         {}
         
-Output the analysis of potential causes of the high memory usage based on the active sessions and slow queries, e.g., 
+Output the analysis of potential causes of the high memory usage based on the memory metric values and slow queries, e.g., 
 
-If there are many active sessions, high-concurrency sessions can consume significant amounts of memory, especially if they execute memory-intensive operations or hold large result sets in memory. This can lead to memory pressure, increased disk I/O, and potential out-of-memory errors if the system does not have enough available memory to handle the workload.
-
-If there are slow queries, they involve large result sets that need to be stored in memory before being sent back to the client application. If the query returns a substantial number of rows or the result set contains large data objects (e.g., images, documents), it can consume a significant amount of memory ...
+{}
 
 Note: include the important slow queries in the output.
-""".format(detailed_memory_metrics, slow_query_state)
+""".format(detailed_memory_metrics, slow_query_state, docs_str)
 
         # print(prompt)
 
