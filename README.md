@@ -1,6 +1,6 @@
 
 <div align= "center">
-    <h1><img src="docs/logo.png" height="28px" /> BMTools</h1>
+    <h1><img src="assets/logo.png" height="28px" /> BMTools</h1>
 </div>
 
 
@@ -10,6 +10,7 @@
   <a href="#1-setup">Setup</a> •
   <a href="#2-use-existing-tools">How To Use</a> •
   <a href="https://arxiv.org/abs/2304.08354">Paper</a> •
+  <a href="https://bmtools.readthedocs.io/en/main/">Docs</a> •
   <a href="https://github.com/thunlp/ToolLearningPapers">Paper List</a> •
   <a href="https://huggingface.co/spaces/congxin95/BMTools-demo">Demo</a> •
   <a href="#citation">Citation</a> •
@@ -23,7 +24,7 @@
 <br>
 
 <div align="center">
-<img src="docs/overview.png" width="700px">
+<img src="assets/overview.png" width="700px">
 </div>
 <br>
 
@@ -37,26 +38,31 @@ This project is inspired by the open-source project [LangChain](https://github.c
 
 <div align="center">
 
-<img src="docs/meta0423.gif" width="700px">
+<img src="assets/meta0423.gif" width="700px">
 
 </div>
 
 
 ## What's New
 
+- **[2023/5/28]** We release [ToolBench](https://github.com/OpenBMB/ToolBench), a large-scale tool learning benchmark together with a capable model.
+
+- **[2023/5/25]** The evaluation data used in the paper is partially released at [data-test](https://cloud.tsinghua.edu.cn/d/2dab79f7b66841329f45/), we have also created large-scale SFT (100k+) high-quality tool-use training data at [data-sft](https://drive.google.com/drive/folders/1OaB-hM7eRiWi3TeqHij24VT9MAqgvC0H?usp=drive_link).
+
 - **[2023/5/19]** Three new Tools are supported: Baidu Map, Google Scholar Search, and Zillow
 
 - **[2023/5/18]** [WebCPM](https://github.com/thunlp/WebCPM) is accepted by ACL 2023, a Chinese version of WebGPT.
 
-- **[2023/4/24]** [Auto-GPT](https://github.com/Significant-Gravitas/Auto-GPT) is supported in BMTools.
-
-- **[2023/4/14]** [BabyAGI](https://github.com/yoheinakajima/babyagi) is supported in BMTools.
+- **[older]** [Auto-GPT](https://github.com/Significant-Gravitas/Auto-GPT) and [BabyAGI](https://github.com/yoheinakajima/babyagi) are supported in BMTools.
 
 
 ## 1. Setup
 
 ```bash
 git clone git@github.com:OpenBMB/BMTools.git
+cd BMTools
+pip install --upgrade pip
+pip install -r requirements.txt
 python setup.py develop
 ```
 
@@ -92,7 +98,7 @@ agent("{Your Question}")
 ```
 
 ### 2.3 Use multiple tools
-We can use multiple tools at the same time. Basically, the language model will do it recursively. It will treat the whole tool as an API, send questions to it, and the tool calls its sub-APIs to solve the question and send it back to parent tools. This functionality will be useful in the upcoming Chat mode.
+We can use multiple tools at the same time. Basically, the language model will do it recursively. It will treat the whole tool as an API, send questions to it, and the tool calls its sub-APIs to solve the question and send it back to parent tools.
 
 Try this functionality using scripts like:
 

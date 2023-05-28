@@ -19,9 +19,7 @@ def build_tool(config) -> Tool:
         legal_info_url="hello@legal.com"
     )
 
-    scenex_api_key = os.environ.get('SCENEX_API_KEY', '')
-    if scenex_api_key == '':
-        raise RuntimeError("SCENEX_API_KEY is not provided. Please sign up for a free account at https://scenex.jina.ai/, create a new API key, and add it to environment variables.")
+    scenex_api_key = config["subscription_key"]
     scenex_api_url: str = (
         "https://us-central1-causal-diffusion.cloudfunctions.net/describe"
     )

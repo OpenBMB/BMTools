@@ -1,5 +1,5 @@
 <div style="text-align: center;">
-    <h1><img src="docs/logo.png" height="28px" /> BMTools</h1>
+    <h1><img src="assets/logo.png" height="28px" /> BMTools</h1>
 </div>
 
 <p align="center">
@@ -7,6 +7,7 @@
   <a href="#1-setup">设置</a> •
   <a href="#2-use-existing-tools">如何使用</a> •
   <a href="https://arxiv.org/abs/2304.08354">综述</a> •
+  <a href="https://bmtools.readthedocs.io/en/main/">文档</a> •
   <a href="https://github.com/thunlp/ToolLearningPapers">论文列表</a> •
   <a href="https://huggingface.co/spaces/congxin95/BMTools-demo">试用</a> •
   <a href="#citation">引用</a> •
@@ -15,7 +16,7 @@
 
 *Read this in [English](README.md).*
 
-![bmtools](docs/overview.png)
+![bmtools](assets/overview.png)
 
 BMTools 是一能让语言模型使用扩展工具的开源仓库，其也是开源社区构建和共享工具的一个平台。在这个仓库中，您可以 (1) 通过编写 Python 函数轻松构建插件，(2) 使用外部的 ChatGPT-Plugins。
 
@@ -23,13 +24,15 @@ BMTools 是一能让语言模型使用扩展工具的开源仓库，其也是开
 
 ## 最新支持
 
+- **[2023/5/28]** 工具学习数据集/评测平台已公开：[ToolBench](https://github.com/OpenBMB/ToolBench), 同时我们也提供了一个具备和ChatGPT使用工具水平接近的模型。
+
+- **[2023/5/25]** 论文中用作测试的数据已公开：[data-test](https://cloud.tsinghua.edu.cn/d/2dab79f7b66841329f45/), 同时我们也公开了10万+ SFT训练数据：[data-sft](https://cloud.tsinghua.edu.cn/d/7447641dd09e4b8280bd/).
+
 - **[2023/5/19]** 中文地图map工具（百度地图API), Google学术搜索工具(SerpAPI), 北美房地产信息工具Zillow(RapidAPI) 上线
 
 - **[2023/5/18]** ACL 2023 工作 [WebCPM](https://github.com/thunlp/WebCPM) 代码，中文版 WebGPT.
 
-- **[2023/4/24]** 已经支持 [Auto-GPT](https://github.com/Significant-Gravitas/Auto-GPT).
-
-- **[2023/4/14]** 已经支持 [BabyAGI](https://github.com/yoheinakajima/babyagi).
+- **[更早]** 已经支持 [Auto-GPT](https://github.com/Significant-Gravitas/Auto-GPT) 和 [BabyAGI](https://github.com/yoheinakajima/babyagi).
 
 ## 星标日志
 
@@ -39,6 +42,9 @@ BMTools 是一能让语言模型使用扩展工具的开源仓库，其也是开
 
 ```bash
 git clone git@github.com:OpenBMB/BMTools.git
+cd BMTools
+pip install --upgrade pip
+pip install -r requirements.txt
 python setup.py develop
 ```
 
@@ -77,7 +83,7 @@ agent("{Your Question}")
 
 ### 2.3 使用多个工具
 
-我们可以同时使用多个工具。基本上，语言模型会递归地处理它。它会将整个工具视为一个 API，向其发送问题，工具调用其子 API 来解决问题并将其发送回父工具。此功能在即将推出的 Chat 模式中将非常有用。
+我们可以同时使用多个工具。基本上，语言模型会递归地处理它。它会将整个工具视为一个 API，向其发送问题，工具调用其子 API 来解决问题并将其发送回父工具。
 
 可以使用以下脚本尝试此功能：
 
