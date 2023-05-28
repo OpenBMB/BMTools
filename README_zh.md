@@ -23,8 +23,8 @@ BMTools 是一能让语言模型使用扩展工具的开源仓库，其也是开
 本项目受到开源项目[LangChain](https://github.com/hwchase17/langchain/)的启发，针对开源工具的使用（例如[ChatGPT-Plugins](https://openai.com/blog/chatgpt-plugins)）进行了优化，力图实现 ChatGPT-Plugins 的开源学术版本。
 
 ## 最新支持
-
-- **[2023/5/25]** 论文中用作测试的数据已公开：[data-test](https://cloud.tsinghua.edu.cn/d/2dab79f7b66841329f45/), 同时我们也公开了10万+ SFT训练数据：[data-sft](https://cloud.tsinghua.edu.cn/d/7447641dd09e4b8280bd/).
+- **[2023/5/28]** CPM-Bee上线
+- **[2023/5/25]** 论文中用作测试的数据已公开：[data-test](https://cloud.tsinghua.edu.cn/d/2dab79f7b66841329f45/), 同时我们也公开了10万+ SFT训练数据：[data-sft](https://drive.google.com/drive/folders/1OaB-hM7eRiWi3TeqHij24VT9MAqgvC0H?usp=drive_link).
 
 - **[2023/5/19]** 中文地图map工具（百度地图API), Google学术搜索工具(SerpAPI), 北美房地产信息工具Zillow(RapidAPI) 上线
 
@@ -44,6 +44,12 @@ cd BMTools
 pip install --upgrade pip
 pip install -r requirements.txt
 python setup.py develop
+```
+现已支持CPM-Bee，可按照如下方法进行配置:
+
+```bash
+git clone -b main --single-branch https://github.com/OpenBMB/CPM-Bee.git
+cp -rf CPM-Bee/src/cpm_live bmtools/models/
 ```
 
 ## 2. 使用现有工具

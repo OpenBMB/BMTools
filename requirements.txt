@@ -8,7 +8,6 @@ openai
 gradio
 py3langid
 transformers
-torch
 sentencepiece
 faiss-cpu
 psycopg2-binary; platform_python_implementation == "CPython"
@@ -17,3 +16,11 @@ pymysql
 arxiv
 googlemaps
 steamship
+torch>=1.10
+bmtrain==0.1.8.post1
+jieba
+tqdm
+tensorboard
+numpy>=1.21.0
+spacy
+opendelta
