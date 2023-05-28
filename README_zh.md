@@ -24,6 +24,8 @@ BMTools 是一能让语言模型使用扩展工具的开源仓库，其也是开
 
 ## 最新支持
 
+- **[2023/5/28]** 工具学习数据集/评测平台已公开：[ToolBench](https://github.com/OpenBMB/ToolBench), 同时我们也提供了一个具备和ChatGPT使用工具水平接近的模型。
+
 - **[2023/5/25]** 论文中用作测试的数据已公开：[data-test](https://cloud.tsinghua.edu.cn/d/2dab79f7b66841329f45/), 同时我们也公开了10万+ SFT训练数据：[data-sft](https://cloud.tsinghua.edu.cn/d/7447641dd09e4b8280bd/).
 
 - **[2023/5/19]** 中文地图map工具（百度地图API), Google学术搜索工具(SerpAPI), 北美房地产信息工具Zillow(RapidAPI) 上线
