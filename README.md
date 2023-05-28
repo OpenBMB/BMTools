@@ -96,7 +96,7 @@ agent("{Your Question}")
 ```
 
 ### 2.3 Use multiple tools
-We can use multiple tools at the same time. Basically, the language model will do it recursively. It will treat the whole tool as an API, send questions to it, and the tool calls its sub-APIs to solve the question and send it back to parent tools. This functionality will be useful in the upcoming Chat mode.
+We can use multiple tools at the same time. Basically, the language model will do it recursively. It will treat the whole tool as an API, send questions to it, and the tool calls its sub-APIs to solve the question and send it back to parent tools.
 
 Try this functionality using scripts like:
 
