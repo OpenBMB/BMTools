@@ -9,6 +9,7 @@ qa =  STQuestionAnswerer()
 print(tools_config)
 agent = qa.load_tools(tools_name, tools_config)
 
+# # NLP task
 # # Translation
 # answer = agent("Please translate this into English: Bonjour!")
 # print(answer)
@@ -49,36 +50,48 @@ agent = qa.load_tools(tools_name, tools_config)
 # answer = agent("Please generate a paragraph of text about artificial intelligence using the following prompt: 'Artificial intelligence is'")
 # print(answer)
 
-
+# # Audio task
+# # automatic speech recognition
 # answer = agent("What does the man say in the audio `test.flac`?")
 # print(answer)
 
+# # audio to audio
 # answer = agent("Enhance this speech `test.flac` more clearly.")
 # print(answer)
 
+# # text to speech & audio to audio
 # answer = agent("Generate a audio where a man says: hello, world!, and then enchance the generated audio.")
 # print(answer)
 
+# # audio classification
 # answer = agent("classify this audio: `test.flac`")
 # print(answer)
 
-# answer = agent("Please generate a picture of a cat.")
+# # CV task
+# # text-to-image
+# answer = agent("Please generate a picture with prompt: a cat.")
 # print(answer)
 
+# # image-to-text
 # answer = agent("What does the picture `boat.png` shows?")
 # print(answer)
 
-answer = agent("Please divide the `boat.png` into proper segments using appropriate models.")
-print(answer)
+# # image-segmentation
+# answer = agent("Please divide the `boat.png` into proper segments using appropriate models.")
+# print(answer)
 
+# # object-detection
 # answer = agent("Detect the objects in the picture `boat.png`.")
 # print(answer)
 
+# # image-classification
 # answer = agent("Classify the picture `boat.png`.")
 # print(answer)
 
+# # visual-question-answering
 # answer = agent("Answer the question according to the photo `boat.png`: what is it?")
 # print(answer)
 
+# # document-question-answering
 # answer = agent("Answer the question based on the content of the document screenshot `doc.jpg`: What is the topic of this document?(hint: use the document-question-answering)")
 # print(answer)
