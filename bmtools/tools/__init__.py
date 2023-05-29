@@ -27,6 +27,7 @@ from . import shell
 from . import image_generation
 from . import airbnb
 from . import job_search
+from . import gradio_tools
 
 
 from .tool import Tool
