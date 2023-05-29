@@ -2,7 +2,7 @@ import fastapi
 import uvicorn
 from .registry import build_tool, list_tools
 from .retriever import Retriever
-from typing import List
+from typing import List, Dict
 from pydantic import BaseModel
 
 class RetrieveRequest(BaseModel):
@@ -73,10 +73,14 @@ class ToolServer:
         self.retriever = Retriever()
         _bind_tool_server(self)
     
-    def load_tool(self, name : str, config = {}):
+    def load_tool(self, name: str, config: Dict = {}):
         if self.is_loaded(name):
             raise ValueError(f"Tool {name} is already loaded")
-        tool = build_tool(name, config)
+        try:
+            tool = build_tool(name, config)
+        except BaseException as e:
+            print(f"Cannot load tool {name}: {repr(e)}")
+            return
         self.loaded_tools[name] = tool.api_info
         self.retriever.add_tool(name, tool.api_info)
         
