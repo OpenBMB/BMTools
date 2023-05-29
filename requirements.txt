@@ -20,3 +20,4 @@ steamship
 gradio_tools
 IPython
 google-search-results
+iso-639
