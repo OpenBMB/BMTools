@@ -17,3 +17,4 @@ pymysql
 arxiv
 googlemaps
 steamship
+gradio_tools
