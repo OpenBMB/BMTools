@@ -111,7 +111,7 @@ def build_tool(conf) -> Tool:
             After that you can choose an available models in the list. 
         ''' % func.__name__
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def try_run_task(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
             except RepositoryNotFoundError as e:
@@ -121,18 +121,18 @@ def build_tool(conf) -> Tool:
                     After that you can choose an available models in the list. 
                 '''
         path = "/" + func.__name__
-        wrapper.route = path
+        try_run_task.route = path
         task_list.append(func.__name__)
-        return tool.get(path)(wrapper)
+        return tool.get(path)(try_run_task)
 
     def format_docs(str):
-        def wrap1(func):
+        def set_docs(func):
             func.__doc__ = func.__doc__ % str
             @wraps(func)
-            def wrap2(*args, **kwargs):
+            def original_func(*args, **kwargs):
                 return func(*args, **kwargs)
-            return wrap2
-        return wrap1
+            return original_func
+        return set_docs
 
     @task
     def question_answering(model_id: str, question: str, context: str) -> str:
@@ -220,7 +220,6 @@ def build_tool(conf) -> Tool:
         for i in range(len(predicted)):
             colors.append((random.randint(100, 255), random.randint(100, 255), random.randint(100, 255), 155))
         for i, pred in enumerate(predicted):
-            print(pred)
             mask = pred.pop("mask").encode("utf-8")
             mask = base64.b64decode(mask)
             mask = Image.open(BytesIO(mask), mode='r')
