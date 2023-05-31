@@ -116,7 +116,7 @@ if __name__ == "__main__":
     print(server.list_tools())
 
     # tool_choice = input("Enter 'ALL' to load all tools, or enter the specific tools you want to load (comma-separated): ")
-
+    
     load_weather_tool()
     # load_database_tool()
     load_chemical_prop_tool()
