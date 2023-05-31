@@ -89,7 +89,7 @@ class RequestTool(BaseTool):
             params = []
             for content_type, content in request_body['content'].items():
                 schema = content['schema']
-                properties = schema['properties']
+                properties = schema.get('properties', {})
                 required = schema.get('required', [])
                 for key, value in properties.items():
                     param = {
