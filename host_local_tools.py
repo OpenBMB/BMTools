@@ -26,6 +26,9 @@ def run_tool_server():
     # def load_wikidata_tool():
     #     server.load_tool("wikidata")
 
+    def load_travel_tool():
+        server.load_tool("travel")
+
     def load_wolframalpha_tool():
         WOLFRAMALPH_APP_ID = os.environ.get("WOLFRAMALPH_APP_ID", None)
         if not WOLFRAMALPH_APP_ID:
@@ -101,6 +104,7 @@ def run_tool_server():
             raise RuntimeError("SERPER_API_KEY not provided, please register one from https://serper.dev and add it to environment variables.")
         server.load_tool("google_serper", {"subscription_key": SERPER_API_KEY})
         server.load_tool("google_scholar", {"subscription_key": SERPER_API_KEY})
+        server.load_tool("walmart", {"subscription_key": SERPER_API_KEY})
 
     def load_python_tool():
         server.load_tool("python")
@@ -123,7 +127,7 @@ def run_tool_server():
     def load_hugging_tools():
         HUGGINGFACE_API_KEY = os.environ.get('HUGGINGFACE_API_KEY', None)
         if not HUGGINGFACE_API_KEY:
-            raise RuntimeError("Huggingface api key not provided, please register one from https://huggingface.co/ and add it to environment variables.")
+            raise RuntimeError("Huggingface api key (access tokens) not provided, please register one from https://huggingface.co/ and add it to environment variables.")
         server.load_tool("hugging_tools")
 
     def load_gradio_tools():
@@ -162,6 +166,7 @@ def run_tool_server():
     load_image_generation_tool()
     load_hugging_tools()
     load_gradio_tools()
+    load_travel_tool()
 
     server.serve()
 

@@ -28,6 +28,8 @@ from . import image_generation
 from . import airbnb
 from . import job_search
 from . import gradio_tools
+from . import travel
+from . import walmart
 
 
 from .tool import Tool

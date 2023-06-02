@@ -13,3 +13,6 @@ export SERPER_API_KEY=''
 export GPLACES_API_KEY=''
 export SCENEX_API_KEY=''
 export STEAMSHIP_API_KEY=''
+export AMADEUS_ID=''
+export AMADEUS_KEY=''
+
