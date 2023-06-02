@@ -5,7 +5,6 @@ python-pptx
 bs4
 langchain==0.0.147
 openai
-gradio
 py3langid
 transformers
 sentencepiece
@@ -16,11 +15,12 @@ pymysql
 arxiv
 googlemaps
 steamship
-gradio_tools
 IPython
 google-search-results
 iso-639
 amadeus
+gradio
+gradio_tools
 # torch>=1.10
 # bmtrain==0.1.8.post1
 # jieba
