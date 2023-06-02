@@ -65,6 +65,13 @@ pip install --upgrade pip
 pip install -r requirements.txt
 python setup.py develop
 ```
+To support CPM-Bee:
+
+```bash
+git clone -b main --single-branch https://github.com/OpenBMB/CPM-Bee.git
+cp -rf CPM-Bee/src/cpm_live bmtools/models/
+```
+
 
 ## 2. Use existing tools
 
