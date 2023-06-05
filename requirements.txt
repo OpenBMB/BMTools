@@ -21,6 +21,7 @@ iso-639
 amadeus
 gradio
 gradio_tools
+peft
 # torch>=1.10
 # bmtrain==0.1.8.post1
 # jieba
