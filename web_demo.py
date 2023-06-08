@@ -1,6 +1,4 @@
 import gradio as gr
-import sys
-# sys.path.append('./inference/')
 from bmtools.agent.tools_controller import MTQuestionAnswerer, load_valid_tools
 from bmtools.agent.singletool import STQuestionAnswerer
 from langchain.schema import AgentFinish
@@ -8,21 +6,42 @@ import os
 import requests
 
 available_models = ["ChatGPT", "GPT-3.5"]
-DEFAULTMODEL = "GPT-3.5"
+DEFAULTMODEL = "ChatGPT" # "GPT-3.5"
 
 tools_mappings = {
     "klarna": "https://www.klarna.com/",
-    "chemical-prop": "http://127.0.0.1:8079/tools/chemical-prop/",
-    "wolframalpha": "http://127.0.0.1:8079/tools/wolframalpha/",
     "weather": "http://127.0.0.1:8079/tools/weather/",
+    # "database": "http://127.0.0.1:8079/tools/database/",
+    # "db_diag": "http://127.0.0.1:8079/tools/db_diag/",
+    "chemical-prop": "http://127.0.0.1:8079/tools/chemical-prop/",
     "douban-film": "http://127.0.0.1:8079/tools/douban-film/",
     "wikipedia": "http://127.0.0.1:8079/tools/wikipedia/",
-    "office-ppt": "http://127.0.0.1:8079/tools/office-ppt/",
+    # "wikidata": "http://127.0.0.1:8079/tools/wikidata/",
+    "wolframalpha": "http://127.0.0.1:8079/tools/wolframalpha/",
     "bing_search": "http://127.0.0.1:8079/tools/bing_search/",
-    "map": "http://127.0.0.1:8079/tools/map/",
+    "office-ppt": "http://127.0.0.1:8079/tools/office-ppt/",
     "stock": "http://127.0.0.1:8079/tools/stock/",
-    "baidu-translation": "http://127.0.0.1:8079/tools/baidu-translation/",
-    "nllb-translation": "http://127.0.0.1:8079/tools/nllb-translation/",
+    "bing_map": "http://127.0.0.1:8079/tools/bing_map/",
+    # "baidu_map": "http://127.0.0.1:8079/tools/baidu_map/",
+    "zillow": "http://127.0.0.1:8079/tools/zillow/",
+    "airbnb": "http://127.0.0.1:8079/tools/airbnb/",
+    "job_search": "http://127.0.0.1:8079/tools/job_search/",
+    # "baidu-translation": "http://127.0.0.1:8079/tools/baidu-translation/",
+    # "nllb-translation": "http://127.0.0.1:8079/tools/nllb-translation/",
+    "tutorial": "http://127.0.0.1:8079/tools/tutorial/",
+    "file_operation": "http://127.0.0.1:8079/tools/file_operation/",
+    "meta_analysis": "http://127.0.0.1:8079/tools/meta_analysis/",
+    "code_interpreter": "http://127.0.0.1:8079/tools/code_interpreter/",
+    "arxiv": "http://127.0.0.1:8079/tools/arxiv/",
+    "google_places": "http://127.0.0.1:8079/tools/google_places/",
+    "google_serper": "http://127.0.0.1:8079/tools/google_serper/",
+    "google_scholar": "http://127.0.0.1:8079/tools/google_scholar/",
+    "python": "http://127.0.0.1:8079/tools/python/",
+    "sceneXplain": "http://127.0.0.1:8079/tools/sceneXplain/",
+    "shell": "http://127.0.0.1:8079/tools/shell/",
+    "image_generation": "http://127.0.0.1:8079/tools/image_generation/",
+    "hugging_tools": "http://127.0.0.1:8079/tools/hugging_tools/",
+    "gradio_tools": "http://127.0.0.1:8079/tools/gradio_tools/",
 }
 
 valid_tools_info = load_valid_tools(tools_mappings)
@@ -34,6 +53,9 @@ gr.close_all()
 MAX_TURNS = 30
 MAX_BOXES = MAX_TURNS * 2
 
+return_msg = []
+chat_history = ""
+
 def show_avatar_imgs(tools_chosen):
     if len(tools_chosen) == 0:
         tools_chosen = list(valid_tools_info.keys())
@@ -41,9 +63,6 @@ def show_avatar_imgs(tools_chosen):
     imgs = [valid_tools_info[tool]['avatar'] for tool in tools_chosen if valid_tools_info[tool]['avatar'] != None]
     imgs = ' '.join([img_template.format(img, img, tool ) for img, tool in zip(imgs, tools_chosen) ])
     return [gr.update(value='<span class="">'+imgs+'</span>', visible=True), gr.update(visible=True)]
-
-return_msg = []
-chat_history = ""
 
 def answer_by_tools(question, tools_chosen, model_chosen):
     global return_msg
@@ -127,36 +146,38 @@ with gr.Blocks() as demo:
                 with gr.Column(scale=0.85):
                     txt = gr.Textbox(show_label=False, placeholder="Question here. Use Shift+Enter to add new line.", lines=1).style(container=False)
                 with gr.Column(scale=0.15, min_width=0):
-                    buttonClear = gr.Button("Clear History")
-                    buttonStop = gr.Button("Stop", visible=False)
+                    buttonChat = gr.Button("Chat")
 
             chatbot = gr.Chatbot(show_label=False, visible=True).style(height=600)
+            buttonClear = gr.Button("Clear History")
+            buttonStop = gr.Button("Stop", visible=False)
 
         with gr.Column(scale=1):
+            model_chosen = gr.Dropdown(
+                list(available_models), value=DEFAULTMODEL, multiselect=False, label="Model provided",
+                info="Choose the model to solve your question, Default means ChatGPT."
+            )
             with gr.Row():
                 tools_search = gr.Textbox(
                     lines=1,
                     label="Tools Search",
-                    info="Please input some text to search tools.",
+                    placeholder="Please input some text to search tools.",
                 )
-                buttonSearch = gr.Button("Clear")
+                buttonSearch = gr.Button("Reset search condition")
             tools_chosen = gr.CheckboxGroup(
                 choices=all_tools_list,
                 value=["chemical-prop"],
                 label="Tools provided",
                 info="Choose the tools to solve your question.",
             )
-            model_chosen = gr.Dropdown(
-                list(available_models), value=DEFAULTMODEL, multiselect=False, label="Model provided", info="Choose the model to solve your question, Default means ChatGPT."
-            )
+
     tools_search.change(retrieve, tools_search, tools_chosen)
     buttonSearch.click(clear_retrieve, [], [tools_search, tools_chosen])
 
     txt.submit(lambda : [gr.update(value=''), gr.update(visible=False), gr.update(visible=True)], [], [txt, buttonClear, buttonStop])
     inference_event = txt.submit(answer_by_tools, [txt, tools_chosen, model_chosen], [chatbot, buttonClear, buttonStop])
+    buttonChat.click(answer_by_tools, [txt, tools_chosen, model_chosen], [chatbot, buttonClear, buttonStop])
     buttonStop.click(lambda : [gr.update(visible=True), gr.update(visible=False)], [], [buttonClear, buttonStop], cancels=[inference_event])
     buttonClear.click(clear_history, [], chatbot)
 
-    
-
-demo.queue().launch(share=True, inbrowser=True, server_name="127.0.0.1", server_port=7001)
+demo.queue().launch(share=False, inbrowser=True, server_name="127.0.0.1", server_port=7001)

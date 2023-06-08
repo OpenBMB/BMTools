@@ -19,11 +19,20 @@ class Translator:
     def __init__(self,
                  openai_api_key: str = None,
                  model_name: str = "gpt-3.5-turbo"):
-        llm = self.create_openai_model(openai_api_key, model_name)
+        self.openai_api_key = openai_api_key
+        self.model_name = model_name
+        self.init_flag = False
+
+    def init_model(self):
+        llm = self.create_openai_model(self.openai_api_key, self.model_name)
         prompt = self.create_prompt()
         self.chain = LLMChain(llm=llm, prompt=prompt)
+        self.init_flag = True
 
     def __call__(self, inputs: Dict[str, str]) -> Dict[str, str]:
+        if not self.init_flag:
+            self.init_model()
+
         question = inputs["input"]
         answer = inputs["output"]
 

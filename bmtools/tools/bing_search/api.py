@@ -12,7 +12,32 @@ SEARCH_RESULT_LIST_CHUNK_SIZE = 3
 RESULT_TARGET_PAGE_PER_TEXT_COUNT = 500
 
 class BingAPI:
+    """
+    A class for performing searches on the Bing search engine.
+
+    Attributes
+    ----------
+    bing_api : BingAPI
+        The Bing API to use for performing searches.
+
+    Methods
+    -------
+    __init__(self, subscription_key: str) -> None:
+        Initialize the BingSearch instance with the given subscription key.
+    search_top3(self, key_words: str) -> List[str]:
+        Perform a search on the Bing search engine with the given keywords and return the top 3 search results.
+    load_page_index(self, idx: int) -> str:
+        Load the detailed page of the search result at the given index.
+    """
     def __init__(self, subscription_key : str) -> None:
+        """
+        Initialize the BingSearch instance with the given subscription key.
+
+        Parameters
+        ----------
+        subscription_key : str
+            The subscription key to use for the Bing API.
+        """
         self._headers = {
             'Ocp-Apim-Subscription-Key': subscription_key
         }
