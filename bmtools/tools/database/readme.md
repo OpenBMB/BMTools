@@ -34,7 +34,7 @@ Contributor: [Xuanhe Zhou](https://github.com/zhouxh19)
     self.llm = OpenAI(model_name="gpt-3.5-turbo", temperature=0.0, openai_api_key=key)
 ```
 
-3. Modify database settings in my_config.ini, e.g.,
+4. Modify database settings in my_config.ini, e.g.,
 
 ```bash
     [{db_system}]
@@ -44,6 +44,8 @@ Contributor: [Xuanhe Zhou](https://github.com/zhouxh19)
     password = postgres
     dbname = postgres
 ```
+
+And rename *config.ini* into *my_config.ini*.
 
 Note. {db_system} must match with that in ./api.py
 

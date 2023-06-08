@@ -19,6 +19,6 @@ Contributor: [Xuanhe Zhou](https://github.com/zhouxh19)
     self.llm = OpenAI(model_name="gpt-3.5-turbo", temperature=0.0, openai_api_key=key)
 ```
 
-3. Modify the settings in config.ini
+3. Modify the settings in *config.ini*, and rename *config.ini* into *my_config.ini*
 
-3. Modify and run the test.py script to test the tool
+4. Modify and run the test.py script to test the tool
