@@ -28,7 +28,3 @@ secret_keys_mine.sh
 my_secret_keys.sh
 
 data/
-
-host_local_tools.py
-
-bmtools/agent/translator.py
