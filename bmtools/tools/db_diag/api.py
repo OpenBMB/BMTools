@@ -7,7 +7,7 @@ import paramiko
 
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet, stopwords
-from nltk.tokenize import word_tokenize 
+from nltk.tokenize import word_tokenize
 import nltk
 
 from ..tool import Tool
@@ -20,8 +20,13 @@ from bmtools.tools.db_diag.anomaly_detection import prometheus
 
 from bmtools.tools.db_diag.example_generate import bm25
 
+import warnings
 
 def obtain_values_of_metrics(start_time, end_time, metrics):
+
+    if end_time - start_time > 11000*3:     # maximum resolution of 11,000 points per timeseries
+        #raise Exception("The time range is too large, please reduce the time range")
+        warnings.warn("The time range ({}, {}) is too large, please reduce the time range".format(start_time, end_time))
 
     required_values = {}
 
@@ -83,13 +88,15 @@ def build_db_diag_tool(config) -> Tool:
     #URL_FORECAST_WEATHER = "http://api.weatherapi.com/v1/forecast.json"
 
     URL_PROMETHEUS = 'http://8.131.229.55:9090/'
-    prometheus_metrics = {"cpu_usage": "avg(rate(process_cpu_seconds_total{instance=\"123.56.63.105:9187\"}[5m]) * 1000)", 
-                          "cpu_metrics": ["node_load1{instance=\"123.56.63.105:9100\"}", "node_load5{instance=\"123.56.63.105:9100\"}", "node_load15{instance=\"123.56.63.105:9100\"}"], 
-                          "memory_usage": "node_memory_MemTotal_bytes{instance=~\"123.56.63.105:9100\"} - (node_memory_Cached_bytes{instance=~\"123.56.63.105:9100\"} + node_memory_Buffers_bytes{instance=~\"123.56.63.105:9100\"} + node_memory_MemFree_bytes{instance=~\"123.56.63.105:9100\"})",
-                          "memory_metrics": ["pg_stat_activity_count{datname=~\"(imdbload|postgres|sysbench|template0|template1|tpcc|tpch)\", instance=~\"123.56.63.105:9187\", state=\"active\"} !=0"]}
+    prometheus_metrics = {"cpu_usage": "avg(rate(process_cpu_seconds_total{instance=\"172.27.58.65:9187\"}[5m]) * 1000)", 
+                          "cpu_metrics": ["node_scrape_collector_duration_seconds{instance=\"172.27.58.65:9100\"}", "node_procs_running{instance=\"172.27.58.65:9100\"}", "node_procs_blocked{instance=\"172.27.58.65:9100\"}", "node_entropy_available_bits{instance=\"172.27.58.65:9100\"}", "node_load1{instance=\"172.27.58.65:9100\"}", "node_load5{instance=\"172.27.58.65:9100\"}", "node_load15{instance=\"172.27.58.65:9100\"}"], 
+                          "memory_usage": "node_memory_MemTotal_bytes{instance=~\"172.27.58.65:9100\"} - (node_memory_Cached_bytes{instance=~\"172.27.58.65:9100\"} + node_memory_Buffers_bytes{instance=~\"172.27.58.65:9100\"} + node_memory_MemFree_bytes{instance=~\"172.27.58.65:9100\"})",
+                          "memory_metrics": ["node_memory_Inactive_anon_bytes{instance=\"172.27.58.65:9100\"}", "node_memory_MemFree_bytes{instance=\"172.27.58.65:9100\"}", "node_memory_Dirty_bytes{instance=\"172.27.58.65:9100\"}", "pg_stat_activity_count{datname=~\"(imdbload|postgres|sysbench|template0|template1|tpcc|tpch)\", instance=~\"172.27.58.65:9187\", state=\"active\"} !=0"],
+                          "network_metrics": ["node_sockstat_TCP_tw{instance=\"172.27.58.65:9100\"}", "node_sockstat_TCP_orphan{instance=\"172.27.58.65:9100\"}"]}
+    # "node_sockstat_TCP_tw{instance=\"172.27.58.65:9100\"}", 
 
     # load knowlege extractor
-    knowledge_matcher = KnowledgeExtraction("/root_causes_dbmind.jsonl")
+    knowledge_matcher = KnowledgeExtraction("/bmtools/tools/db_diag/root_causes_dbmind.jsonl")
 
     # load db settings
     script_path = os.path.abspath(__file__)
@@ -163,7 +170,7 @@ def build_db_diag_tool(config) -> Tool:
 
         interval_time = 5
         metric_values = prometheus('api/v1/query_range', {'query': prometheus_metrics[metric_name], 'start': start_time-interval_time*60, 'end': end_time+interval_time*60, 'step': '3'})
-        # prometheus('api/v1/query_range', {'query': '100 - (avg(irate(node_cpu_seconds_total{instance=~"123.56.63.105:9100",mode="idle"}[1m])) * 100)', 'start': '1684412385', 'end': '1684413285', 'step': '3'})
+        # prometheus('api/v1/query_range', {'query': '100 - (avg(irate(node_cpu_seconds_total{instance=~"172.27.58.65:9100",mode="idle"}[1m])) * 100)', 'start': '1684412385', 'end': '1684413285', 'step': '3'})
         # print(" === metric_values", metric_values)
 
         if metric_values["data"]["result"] != []:
@@ -186,7 +193,7 @@ def build_db_diag_tool(config) -> Tool:
         # live_tuples\n- dead_tuples\n- table_size
 
         cpu_metrics = prometheus_metrics["cpu_metrics"]
-        cpu_metrics = cpu_metrics + find_abnormal_metrics(start_time, end_time, monitoring_metrics, 'cpu')
+        cpu_metrics = cpu_metrics # + find_abnormal_metrics(start_time, end_time, monitoring_metrics, 'cpu')
 
         print("==== cpu_metrics", cpu_metrics)
 
@@ -202,7 +209,7 @@ Next output the analysis of potential causes of the high CPU usage based on the 
 {}""".format(detailed_cpu_metrics, docs_str)
 
         print(prompt)
-
+        
         # response = openai.Completion.create(
         # model="text-davinci-003",
         # prompt=prompt,
@@ -230,7 +237,7 @@ Next output the analysis of potential causes of the high CPU usage based on the 
         llm = CustomLLM()
         output_analysis = llm(prompt)
 
-        return output_analysis
+        return {"diagnose": output_analysis, "knowledge": docs_str}
 
     @tool.get("/memory_diagnosis_agent")
     def memory_diagnosis_agent(start_time : int, end_time : int):
@@ -238,7 +245,7 @@ Next output the analysis of potential causes of the high CPU usage based on the 
         memory_metrics = prometheus_metrics["memory_metrics"]
 
         memory_metrics = prometheus_metrics["memory_metrics"]
-        memory_metrics = memory_metrics + find_abnormal_metrics(start_time, end_time, monitoring_metrics, 'memory')
+        memory_metrics = memory_metrics # + find_abnormal_metrics(start_time, end_time, monitoring_metrics, 'memory')
 
         detailed_memory_metrics = obtain_values_of_metrics(start_time, end_time, memory_metrics)
 
@@ -303,6 +310,6 @@ Note: include the important slow queries in the output.
         llm = CustomLLM()
         output_analysis = llm(prompt)
 
-        return output_analysis
+        return {"diagnose": output_analysis, "knowledge": docs_str}
 
     return tool
