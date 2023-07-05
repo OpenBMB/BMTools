@@ -70,6 +70,7 @@ def run_tool_server():
         server.load_tool("zillow", {"subscription_key": RAPIDAPI_KEY})
         server.load_tool("airbnb", {"subscription_key": RAPIDAPI_KEY})
         server.load_tool("job_search", {"subscription_key": RAPIDAPI_KEY})
+        server.load_tool("spotify", {"subscription_key": RAPIDAPI_KEY})
 
     # def load_nllb_translation_tool():
     #     server.load_tool("nllb-translation")
