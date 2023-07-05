@@ -10,10 +10,10 @@ prepare the test samples
 '''
 def execute_sql(sql):
     conn = psycopg2.connect(database='tpch10x',
-                            user='postgres',
-                            password='kDZCNgUV0zJwdq9',
-                            host='166.111.121.55',
-                            port=15432)
+                            user='xxx',
+                            password='xxx',
+                            host='xxx',
+                            port=xxx)
 
     cur = conn.cursor()
     cur.execute(sql)
