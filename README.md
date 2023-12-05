@@ -33,6 +33,9 @@ BMTools is an open-source repository that extends language models using tools an
 
 This project is inspired by the open-source project [LangChain](https://github.com/hwchase17/langchain/) and optimized for the usage of open-sourced tools like [ChatGPT-Plugins](https://openai.com/blog/chatgpt-plugins), striving to achieve the open-source academic version of ChatGPT-Plugins.
 
+- **For new features and further developments, please go to [XAgent](https://github.com/OpenBMB/XAgent).**
+
+
 - **A demo of using BMTools to manipulate tools for meta analysis.**
 
 
