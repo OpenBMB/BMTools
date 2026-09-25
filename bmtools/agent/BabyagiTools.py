@@ -6,7 +6,6 @@ from langchain import LLMChain, OpenAI, PromptTemplate, SerpAPIWrapper
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.llms import BaseLLM
 from langchain.vectorstores.base import VectorStore
-from pydantic import BaseModel, Field
 from langchain.chains.base import Chain
 
 from langchain.vectorstores import FAISS
@@ -139,21 +138,33 @@ def execute_task(vectorstore, execution_chain: LLMChain, objective: str, task: s
     context = _get_top_tasks(vectorstore, query=objective, k=k)
     return execution_chain.run(objective=objective, context=context, task=task)
 
-class BabyAGI(Chain, BaseModel):
-    """Controller model for the BabyAGI agent."""
+class BabyAGI(Chain):
+    """Controller model for the BabyAGI agent.
+    
+    Note: Inherits from Chain to avoid metaclass conflict that occurs
+    when inheriting from both Chain and BaseModel in newer versions.
+    """
 
-    task_list: deque = Field(default_factory=deque)
-    task_creation_chain: TaskCreationChain = Field(...)
-    task_prioritization_chain: TaskPrioritizationChain = Field(...)
-    initial_task_creation_chain: InitialTaskCreationChain = Field(...)
-    execution_chain: AgentExecutor = Field(...)
-    task_id_counter: int = Field(1)
-    vectorstore: VectorStore = Field(init=False)
-    max_iterations: Optional[int] = None
-        
-    class Config:
-        """Configuration for this pydantic object."""
-        arbitrary_types_allowed = True
+    def __init__(
+        self,
+        task_list: deque = None,
+        task_creation_chain: TaskCreationChain = None,
+        task_prioritization_chain: TaskPrioritizationChain = None,
+        initial_task_creation_chain: InitialTaskCreationChain = None,
+        execution_chain: AgentExecutor = None,
+        task_id_counter: int = 1,
+        vectorstore: VectorStore = None,
+        max_iterations: Optional[int] = None,
+    ):
+        super().__init__()
+        self.task_list = task_list if task_list is not None else deque()
+        self.task_creation_chain = task_creation_chain
+        self.task_prioritization_chain = task_prioritization_chain
+        self.initial_task_creation_chain = initial_task_creation_chain
+        self.execution_chain = execution_chain
+        self.task_id_counter = task_id_counter
+        self.vectorstore = vectorstore
+        self.max_iterations = max_iterations
 
     def add_task(self, task: Dict):
         self.task_list.append(task)

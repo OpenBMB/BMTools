@@ -96,19 +96,24 @@ class Executor(AgentExecutorWithTranslation):
 
         """
         inputs = self.prep_inputs(inputs)
-        self.callback_manager.on_chain_start(
-            {"name": self.__class__.__name__},
-            inputs,
-            verbose=self.verbose,
-        )
+        # Use callbacks if callback_manager is not available (langchain >= 0.0.200)
+        callback_handler = getattr(self, 'callback_manager', None) or getattr(self, 'callbacks', None)
+        if callback_handler:
+            callback_handler.on_chain_start(
+                {"name": self.__class__.__name__},
+                inputs,
+                verbose=self.verbose,
+            )
         try:
             for output in self._call(inputs):
                 if type(output) is dict:
                     output = self.prep_outputs(inputs, output, return_only_outputs)
                 yield output
         except (KeyboardInterrupt, Exception) as e:
-            self.callback_manager.on_chain_error(e, verbose=self.verbose)
+            if callback_handler:
+                callback_handler.on_chain_error(e, verbose=self.verbose)
             raise e
-        self.callback_manager.on_chain_end(output, verbose=self.verbose)
+        if callback_handler:
+            callback_handler.on_chain_end(output, verbose=self.verbose)
         # return self.prep_outputs(inputs, output, return_only_outputs)
         return output

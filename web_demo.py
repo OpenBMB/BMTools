@@ -119,9 +119,15 @@ def retrieve(tools_search):
         param = {
             "query": tools_search
         }
-        response = requests.post(url, json=param)
-        result = response.json()
-        retrieved_tools = result["tools"]
+        try:
+            response = requests.post(url, json=param, timeout=10)
+            response.raise_for_status()
+            result = response.json()
+            retrieved_tools = result.get("tools", [])
+        except (requests.RequestException, ValueError) as e:
+            # Handle connection errors, timeouts, or invalid JSON responses gracefully
+            print(f"Error retrieving tools: {e}")
+            retrieved_tools = []
         return gr.update(choices=retrieved_tools)
 
 def clear_retrieve():
